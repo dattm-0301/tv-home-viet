@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.0 — 2026-10-28
+
+- Remote settings for city/coordinates, timezone, widget visibility, color background and idle clock.
+- Personal options persist separately from theme defaults; theme updates preserve TV choices.
+- Fix 8-column persistence and runtime JSON HDMI mapping.
+- Weather and dealer caches cannot appear under a newly selected location/dealer. Disabled widgets stop their network requests.
+- Guarded release updater verifies SHA-256 and preserves app data; backups include personal JSON.
+- Document customization, update/recovery limits, source compatibility and developer release flow.
+
 ## 1.0.1 — 2026-10-28
 
 - HDMI-CEC entries now read physical-port state rather than a cached device connection.

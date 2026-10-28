@@ -4,7 +4,7 @@
 
 - Android TV / Google TV Android 8.0+ (API 26), có remote D-pad; không cần root.
 - Tải source ZIP rồi giải nén, hoặc clone repo; mở terminal trong thư mục gốc.
-- Script tự động cần Bash và Python 3; cài thủ công bên dưới chỉ cần ADB.
+- Script tự động cần Bash và Python 3.9+; cài thủ công bên dưới chỉ cần ADB.
 - Cài Android SDK Platform Tools (`adb`). Nếu build: JDK **17**, Android SDK platform 34 / build tools 34+ và Internet để Gradle tải dependency.
 - Trên TV bật Developer options (nhấn Build number 7 lần), bật ADB / USB debugging. Một số box yêu cầu quyền của nhà mạng; không có mật khẩu chung được xác nhận.
 - Cùng mạng LAN. IP nằm ở trang Mạng của TV. Dùng mạng nhà tin cậy; tắt ADB qua mạng khi hoàn thành.
@@ -69,13 +69,15 @@ Muốn rollback APK: cài lại bản sao bằng `adb install -r OLD.apk`; nếu
 
 ## 5. Cấu hình thời tiết, nền và giá
 
+**Khuyến nghị:** dùng mục Vị trí & widget trên TV, xem [CUSTOMIZE.md](CUSTOMIZE.md). Lựa chọn cá nhân ưu tiên hơn theme; [cập nhật APK không mất cấu hình](UPDATING.md).
+
 Sửa bản sao `themes/default/config.json`, rồi:
 
 ```sh
 ./scripts/tv.sh TV_IP:5555 theme themes/default/config.json
 ```
 
-Tọa độ mặc định là khu trung tâm Hà Nội, không phải nhà người dùng. Sửa `weather_place`, `weather_latitude`, `weather_longitude`. Dữ liệu gửi tới Open-Meteo gồm tọa độ và IP kết nối; không cần quyền GPS. Sau đổi vị trí, cache thời tiết được làm mới. Khung giờ / âm lịch của giao diện này dùng Việt Nam UTC+7.
+Tọa độ mặc định là khu trung tâm Hà Nội, không phải nhà người dùng. Sửa `weather_place`, `weather_latitude`, `weather_longitude`. Dữ liệu gửi tới Open-Meteo gồm tọa độ và IP kết nối; không cần quyền GPS. Sau đổi vị trí, cache thời tiết được làm mới. Mặc định múi giờ là Việt Nam; đồng hồ/ngày dương/dự báo có thể đổi bằng `display_timezone`. Âm lịch/ngày lễ vẫn dùng Việt Nam UTC+7.
 
 - `background_color`: màu nền; `sky_intensity`: nền màu theo thời gian (0–100).
 - `gold_brand`: `doji`, `pnj`, `phuquy`, `btmh` (giá vàng miếng SJC tại đại lý tương ứng).

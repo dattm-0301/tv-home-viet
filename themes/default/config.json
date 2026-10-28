@@ -10,5 +10,12 @@
   "gold_brand": "doji",
   "gold_refresh_minutes": 5,
   "fuel_refresh_minutes": 15,
-  "home_idle_clock_minutes": 5
+  "home_idle_clock_minutes": 5,
+  "display_timezone": "Asia/Ho_Chi_Minh",
+  "home_layout": "clock_left",
+  "show_weather": true,
+  "show_gold": true,
+  "show_fuel": true,
+  "show_lunar": true,
+  "show_holidays": true
 }

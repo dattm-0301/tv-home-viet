@@ -1,6 +1,6 @@
 # Public preview review — 2026-10-28
 
-Scope: this sanitized source tree and the signed 1.0.1 APK, not the private TV checkout or its full history. This is a local engineering review, not an independent penetration-test certificate.
+Scope: this sanitized source tree and the signed 1.1.0 APK, not the private TV checkout or its full history. This is a local engineering review, not an independent penetration-test certificate.
 
 ## Changes made for publication
 
@@ -20,7 +20,7 @@ Scope: this sanitized source tree and the signed 1.0.1 APK, not the private TV c
 ## Checks and outcomes
 
 - JDK 17 / Android SDK 34: debug + unsigned release build succeeded; signed release verified with apksigner and installed successfully.
-- 169 unit tests passed (including coordinate boundary and timestamp-offset checks), zero failures/errors.
+- 176 unit tests passed (including coordinate boundary and timestamp-offset checks), zero failures/errors.
 - Full Android release lint: **0 errors, 176 warnings**. Remaining warnings are largely existing hardcoded text/localization, unused resources and layout suggestions; they were not suppressed to claim a warning-free build.
 - Gitleaks 8.30.1 source scan: no detected secrets. The official fork retains upstream history. Only the sanitized source tree was ported into custom commits, which were separately scanned; private TV repository history is not reused.
 - 27 resolved runtime Maven dependencies queried against OSV: no advisories returned at review time. This does not cover every build-tool or future vulnerability.
@@ -54,3 +54,9 @@ Use a disposable emulator and `demo/` for screenshots/probes. Never run sample s
 ## Physical TV follow-up — 2026-10-28
 
 The private `com.ts.launcher` identity, signed with its existing key, was upgraded in place on a Xiaomi TV identifying itself as MiTV-MTEQ0. HDMI 1 and HDMI 2 opened the correct Xiaomi source player, and Home returned to the custom launcher. The TV reported a cached PS5 CEC device as connected while its parent HDMI port was in standby; the menu now uses the physical port, displays standby explicitly, and listens for state callbacks. A standby flag is not proof of a cable or playable video on this firmware. Hot-plug transitions with an actively playing source have not been tested. This does not establish firmware Home allowlisting for the separate public package. Private screenshots, Wi-Fi names, location labels, backups and footage are kept outside this public repository.
+
+## Multi-user customization review — 1.1.0
+
+The private PersonalSettingsActivity validates coordinates, IANA timezones, numeric ranges and a bounded set of personal keys before atomic writes. The permission-protected theme provider permits personal.json; import tooling validates that JSON, and malformed direct edits fall back to the last valid local copy. Settings are local to the Android app/user. Personal overrides take precedence over theme defaults, with explicit reset. The public package ID and signing key remain unchanged.
+
+The release updater runs only on request, selects a complete versioned release from the fixed project repository, limits response sizes, verifies SHA-256, and delegates to the guarded APK installer. It does not bypass Android signature/downgrade checks or silently remove app data. Four Python checks cover validation, checksum tampering, release assets and version ordering. No update endpoint, token or signing private key is embedded in the APK.

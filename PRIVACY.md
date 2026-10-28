@@ -18,3 +18,7 @@ Chính sách của từng dịch vụ áp dụng cho dữ liệu họ nhận. AP
 Quyền Android: Internet, trạng thái mạng / Wi-Fi, yêu cầu gỡ app qua hộp xác nhận hệ thống, và một quyền nguồn vào Yandex chỉ có tác dụng trên firmware tương ứng. Bản public không xin vị trí chính xác, micro, camera, danh bạ hay quyền lưu trữ toàn bộ thiết bị. Home và screensaver phải xuất các entry point cho hệ thống Android. Provider theme yêu cầu quyền hệ thống; trợ năng là tùy chọn lọc phím.
 
 APK / cấu hình backup, ảnh màn hình, tọa độ riêng và khóa ADB không được đưa vào repo. Tắt ADB qua mạng sau cài đặt. `allowBackup=false`; việc xóa dữ liệu app sẽ xóa thứ tự / nhóm và cache cục bộ.
+
+## Personal settings and updates
+
+Vị trí/widget/nền lưu tại personal.json trong vùng dữ liệu của ứng dụng và có bản sao nội bộ để khởi động an toàn. Tùy chọn áp dụng cho TV/người dùng Android hiện tại, không đồng bộ qua tài khoản hoặc máy chủ. Tắt widget sẽ ngừng các yêu cầu mạng tương ứng khi phiên Home/đồng hồ mới được mở; yêu cầu đã chạy có thể hoàn tất. Bộ cập nhật chỉ chạy khi người dùng gọi, truy cập GitHub API và tải bản phát hành qua HTTPS; không có tự tải/cài nền. Backup JSON có thể chứa tọa độ riêng và phải được giữ kín.

@@ -39,3 +39,17 @@ These are captures from the signed 1.0.0 release on the Google TV Android 14 emu
 ### Changing font with the remote
 
 ![Fonts](screenshots/07-fonts.png)
+
+## Tùy chỉnh từ bản 1.1
+
+![Vị trí và widget](screenshots/08-personal-settings.png)
+
+Màn hình thiết lập trên emulator; tọa độ là trung tâm thành phố mẫu.
+
+![Ví dụ Đà Nẵng, tắt giá](screenshots/09-custom-city.png)
+
+Cùng emulator sau khi lưu vị trí Đà Nẵng và tắt hai widget giá. Các app ghi Demo là mẫu, YouTube là ứng dụng độc lập cài sẵn trên emulator. Tên/giá trị trong ảnh là trạng thái lúc chụp, không đóng gói làm dữ liệu mặc định.
+
+![Đổi đồng hồ sang phải](screenshots/10-clock-right.png)
+
+Mẫu clock_right trên emulator; không phải di chuyển tự do từng widget.

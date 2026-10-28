@@ -12,7 +12,7 @@ Launcher cho Android TV / Google TV, phát triển từ [CleanYourTV của Gathi
 
 **Nhánh sử dụng: `feat/tv-home-viet`.** Nhánh `main` giữ mã gốc CleanYourTV. [Nguồn gốc và cách cập nhật](docs/UPSTREAM.md).
 
-[**Tải APK 1.0.1**](https://github.com/dattm-0301/tv-home-viet/releases/download/tv-home-viet-v1.0.1/TV-Home-Viet-1.0.1.apk) · [Trang phát hành và mã kiểm tra](https://github.com/dattm-0301/tv-home-viet/releases/tag/tv-home-viet-v1.0.1)
+[**Tải APK 1.1.0**](https://github.com/dattm-0301/tv-home-viet/releases/download/tv-home-viet-v1.1.0/TV-Home-Viet-1.1.0.apk) · [Trang phát hành và mã kiểm tra](https://github.com/dattm-0301/tv-home-viet/releases/tag/tv-home-viet-v1.1.0)
 
 ## Cài nhanh
 
@@ -30,6 +30,17 @@ cd ..
 Chọn **Cho phép** khi TV hỏi kết nối. Script sao lưu APK/cấu hình cũ nếu có, cài và mở thử. Sau khi kiểm tra remote và HDMI, chọn **TV Home Việt** trong cài đặt ứng dụng Home mặc định. Giữ launcher gốc để quay lại khi cần.
 
 **[Hướng dẫn đầy đủ: Mac / Windows / Linux, cấu hình, HDMI, màn hình chờ và khôi phục →](docs/SETUP.md)**
+
+## Tùy chỉnh và cập nhật
+
+Giữ OK trên Cài đặt → Tùy chọn launcher → **Vị trí & widget** để chọn thành phố/tọa độ, múi giờ, widget, nền và đồng hồ. Font, số cột, nhóm và thứ tự app có sẵn bằng remote. Tùy chọn cá nhân giữ riêng khỏi theme và giữ qua cập nhật APK.
+
+**[Hướng dẫn tùy chỉnh](docs/CUSTOMIZE.md)** · **[Cập nhật giữ cấu hình](docs/UPDATING.md)**
+
+```sh
+python3 scripts/update.py --check
+python3 scripts/update.py TV_IP:5555
+```
 
 ## Remote
 
