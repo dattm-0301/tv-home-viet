@@ -1,0 +1,20 @@
+{
+  "background_color": "#08121F",
+  "wallpaper": false,
+  "sky_intensity": 38,
+  "columns": 6,
+  "weather_place": "Hà Nội",
+  "weather_latitude": 21.0285,
+  "weather_longitude": 105.8542,
+  "show_aqi": true,
+  "gold_brand": "doji",
+  "gold_refresh_minutes": 5,
+  "fuel_refresh_minutes": 15,
+  "home_idle_clock_minutes": 5,
+  "input_action": "com.xiaomi.mitv.tvplayer.EXTSRC_PLAY",
+  "input_sources": [
+    "HW5=23",
+    "HW6=24",
+    "HW2=2"
+  ]
+}

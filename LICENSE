@@ -1,3 +1,7 @@
+Mixed-license distribution: launcher code is MIT (text below); fonts are SIL OFL;
+the lunar dataset has personal, non-commercial terms. See THIRD_PARTY.md before
+redistribution. The MIT grant below does not override those third-party terms.
+
 MIT License
 
 Copyright (c) 2026 Gathin
@@ -25,3 +29,8 @@ SOFTWARE.
 The Outfit typeface in launcher/app/src/main/res/font/outfit.ttf is copyright
 The Outfit Project Authors and licensed under the SIL Open Font License 1.1,
 see launcher/FONT-LICENSE-OFL.txt.
+
+Public customization copyright (c) 2026 TV Home Việt contributors.
+
+Scope: the lunar-months.json dataset is NOT under this MIT license. Its original
+personal, non-commercial terms are in THIRD_PARTY.md and assets/NOTICE.txt.

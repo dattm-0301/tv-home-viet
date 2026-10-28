@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One price block: name + freshness dot and feed timestamp, then the main price big and the second one small. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <com.gathin.tvhome.ShrinkRow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/blockKicker"
+            style="@style/HomePanelText"
+            android:ellipsize="end"
+            android:fontFamily="@font/ui_bold"
+            android:tag="shrink:1"
+            android:textColor="@color/home_accent"
+            android:textSize="@dimen/home_price_head_text" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <View
+            android:id="@+id/blockDot"
+            android:layout_width="4dp"
+            android:layout_height="4dp"
+            android:layout_marginStart="5dp"
+            android:background="@drawable/home_dot" />
+
+        <TextView
+            android:id="@+id/blockStamp"
+            style="@style/HomePanelText"
+            android:layout_marginStart="3.5dp"
+            android:fontFamily="@font/ui_medium"
+            android:fontFeatureSettings="tnum"
+            android:textColor="#C7FFFFFF"
+            android:textSize="@dimen/home_price_stamp_text" />
+    </com.gathin.tvhome.ShrinkRow>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:baselineAligned="false"
+        android:gravity="bottom"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/blockValue1"
+                style="@style/HomePanelText"
+                android:fontFamily="@font/playfair_bold"
+                android:fontFeatureSettings="lnum,tnum"
+                android:text="—" />
+
+            <TextView
+                android:id="@+id/blockCaption1"
+                style="@style/HomePanelText"
+                android:layout_width="match_parent"
+                android:layout_marginTop="2.5dp"
+                android:ellipsize="end"
+                android:fontFamily="@font/ui_medium"
+                android:textColor="#C7FFFFFF"
+                android:textSize="@dimen/home_price_caption_text" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:gravity="end"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/blockValue2"
+                style="@style/HomePanelText"
+                android:layout_marginTop="@dimen/home_price_small_trim"
+                android:layout_marginBottom="@dimen/home_price_small_trim"
+                android:fontFamily="@font/playfair_bold"
+                android:fontFeatureSettings="lnum,tnum"
+                android:text="—"
+                android:textSize="@dimen/home_price_small_text" />
+
+            <TextView
+                android:id="@+id/blockCaption2"
+                style="@style/HomePanelText"
+                android:layout_marginTop="2.5dp"
+                android:ellipsize="end"
+                android:fontFamily="@font/ui_medium"
+                android:maxWidth="65dp"
+                android:textColor="#C7FFFFFF"
+                android:textSize="@dimen/home_price_caption_text" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

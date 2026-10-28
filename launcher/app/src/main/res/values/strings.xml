@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Home</string>
+    <string name="app_name">TV Home Việt</string>
     <string name="inputs">Inputs</string>
     <string name="wifi">Wi-Fi</string>
     <string name="settings">Settings</string>
@@ -10,11 +10,9 @@
     <string name="not_connected">No device</string>
     <string name="live_tv">Live TV</string>
     <string name="no_inputs">No inputs found</string>
-    <string name="more_inputs">More inputs</string>
     <string name="good_morning">Good morning</string>
     <string name="good_afternoon">Good afternoon</string>
     <string name="good_evening">Good evening</string>
-    <string name="good_forenoon">Good late morning</string>
     <string name="good_night">Good night</string>
     <string name="festival_dussehra_greeting">Happy Dussehra</string>
     <string name="festival_diwali_greeting">Happy Diwali</string>
@@ -46,12 +44,10 @@
     <string name="vpn">VPN</string>
     <string name="vpn_off">VPN off</string>
     <string name="home_settings">Choose default home</string>
-    <string name="home_settings_help">Select your original home to stop using CleanYourTV as Home, or CleanYourTV to switch back. The original launcher must be enabled and your TV must provide a home picker; use the restore script first if it was disabled.</string>
+    <string name="home_settings_help">Choose your stock launcher to return, or TV Home Việt to use this Home. Your TV must support choosing a default Home; keep the stock launcher enabled for recovery.</string>
     <string name="launcher_settings">Launcher settings</string>
-    <string name="native_settings">Native settings</string>
     <string name="columns_label">Apps per row</string>
     <string name="rows_below_dock_label">Rows below dock</string>
-    <string name="dock_opacity_label">Dock band opacity</string>
     <string name="wallpaper_label">Wallpaper</string>
     <string name="wallpaper_state">Wallpaper: %1$s</string>
     <string name="wallpaper_none">None</string>
@@ -60,8 +56,6 @@
     <string name="animations_state">Animations: %1$s</string>
     <string name="advanced_effects">Advanced effects</string>
     <string name="advanced_effects_state">Advanced effects: %1$s</string>
-    <string name="open_on_start_label">Open on start</string>
-    <string name="open_on_start_state">Open on start: %1$s</string>
     <string name="advanced_effects_warning">Adds a lifted tile, icon zoom and smooth colour transitions. May increase memory use; the actual difference depends on your TV.</string>
     <string name="follow_theme">Follow theme (reset on-TV choices)</string>
     <string name="follow_theme_hint">Uses the current theme or built-in layout and motion settings. Pushing or resetting a theme also clears your on-TV choices.</string>
@@ -96,15 +90,9 @@
     <string name="card_state_new_key">New key</string>
     <string name="card_state_new_label">New name</string>
     <string name="dock_edit">Edit dock</string>
-    <!-- Settings menu: opens the system power menu (Restart on most TVs). -->
-    <string name="power_menu">Restart…</string>
     <string name="dock_edit_hint">Choose the dock place to change and press OK. Back to finish.</string>
     <string name="dock_edit_pick_app">Now choose the app to put there and press OK. Back to choose another place.</string>
-    <string name="tile_add_to_dock">Add to dock</string>
-    <string name="tile_replace_in_dock">Replace with another app</string>
-    <string name="dock_edit_pick_place">Choose the dock place for this app and press OK. Back to cancel.</string>
     <string name="reorder">Reorder apps</string>
-    <string name="tile_move">Move</string>
     <string name="reorder_hint">OK picks up an app, arrows move it, Back places it. Back again to finish.</string>
     <string name="reorder_not_saved">Couldn\'t save the new order</string>
     <string name="app_library">App library</string>
@@ -122,7 +110,7 @@
         <item quantity="one">%1$d app</item>
         <item quantity="other">%1$d apps</item>
     </plurals>
-    <!-- The greeting, then greeting_name: "Good morning, Mr. Trịnh". -->
+    <!-- The greeting, then greeting_name: "Good morning, bạn". -->
     <string name="greeting_with_name">%1$s, %2$s</string>
 
     <!-- Race-weekend panel (RaceWeekend). -->
@@ -152,6 +140,16 @@
     <!-- Cinematic top shelf (cinematic_home): the line under the focused dock app's name; %1$s is when it was
          last opened, e.g. "5 minutes ago" or "yesterday, 9:40 pm". -->
     <string name="last_opened">Last opened %1$s</string>
-    <!-- game_day: a game on now, in the race panel. -->
-    <string name="game_live">Live now</string>
+    <!-- Home redesign (Vietnamese-only build). -->
+    <string name="home_apps_title" translatable="false">Ứng dụng</string>
+    <string name="home_sort" translatable="false">Sắp xếp</string>
+    <string name="home_input_none" translatable="false">Chọn nguồn</string>
+    <string name="home_network" translatable="false">Mạng</string>
+    <string name="home_sort_moving" translatable="false">Đang di chuyển %1$s  |  ◀ ▶ ▲ ▼ Di chuyển · đổi nhóm  |  OK Thả</string>
+    <string name="home_sort_picking" translatable="false">Sắp xếp  |  OK Nhấc ứng dụng  ·  Back Xong  ·  Giữ OK trên ô để sắp xếp nhanh</string>
+    <string name="home_font_state" translatable="false">Phông chữ giao diện: %1$s</string>
+    <string name="home_collapse_state" translatable="false">Thu gọn widget khi cuộn: %1$s</string>
+    <string name="home_new_group" translatable="false">Nhóm mới</string>
+    <string name="home_brightness" translatable="false">Độ sáng</string>
+    <string name="input_standby_uncertain">Standby / no signal</string>
 </resources>

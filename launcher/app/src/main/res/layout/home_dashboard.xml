@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home widget row (x 112–1808, y 165–459): time and calendar straight on the photo, then one glass panel with the
+     weather + 12-hour forecast and the gold and fuel prices. Sizes: values/home_dimens.xml; filled by HomeDashboard. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dashboardRow"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/home_panel_height"
+    android:baselineAligned="false"
+    android:clipChildren="false"
+    android:focusable="false"
+    android:importantForAccessibility="no"
+    android:orientation="horizontal">
+
+    <!-- Time and calendar, on the photo -->
+    <LinearLayout
+        android:id="@+id/leftBlock"
+        android:layout_width="@dimen/home_clock_column"
+        android:layout_height="match_parent"
+        android:clipChildren="false"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingStart="2dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="true"
+            android:clipChildren="false"
+            android:orientation="horizontal">
+
+            <!-- Weekday (id kept from the old greeting line) -->
+            <TextView
+                android:id="@+id/greeting"
+                style="@style/HomeOnPhoto"
+                android:layout_marginStart="-3dp"
+                android:layout_marginTop="@dimen/home_weekday_trim"
+                android:layout_marginBottom="@dimen/home_weekday_trim"
+                android:fontFamily="@font/dancing_bold"
+                android:paddingStart="3dp"
+                android:paddingEnd="3dp"
+                android:textColor="@color/home_accent"
+                android:textSize="@dimen/home_weekday_text" />
+
+            <TextView
+                android:id="@+id/homeDate"
+                style="@style/HomeOnPhoto"
+                android:layout_width="0dp"
+                android:layout_marginStart="5dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:fontFamily="@font/ui_bold"
+                android:fontFeatureSettings="tnum"
+                android:textSize="@dimen/home_date_text" />
+        </LinearLayout>
+
+        <TextClock
+            android:id="@+id/clock"
+            style="@style/HomeOnPhoto"
+            android:layout_marginTop="@dimen/home_time_trim"
+            android:layout_marginBottom="@dimen/home_time_trim"
+            android:fontFamily="@font/playfair_bold"
+            android:fontFeatureSettings="lnum,tnum"
+            android:format12Hour="h:mm"
+            android:format24Hour="HH:mm"
+            android:letterSpacing="-0.02"
+            android:textSize="@dimen/home_time_text" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <View
+                android:layout_width="@dimen/home_moon"
+                android:layout_height="@dimen/home_moon"
+                android:background="@drawable/home_moon" />
+
+            <TextView
+                android:id="@+id/homeLunarDate"
+                style="@style/HomeOnPhoto"
+                android:layout_width="0dp"
+                android:layout_marginStart="6dp"
+                android:layout_marginTop="@dimen/home_lunar_trim"
+                android:layout_marginBottom="@dimen/home_lunar_trim"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:fontFamily="@font/playfair_italic"
+                android:textSize="@dimen/home_lunar_text" />
+        </LinearLayout>
+
+        <!-- Shamsi date line, only where a theme turns shamsi_date on. -->
+        <TextView
+            android:id="@+id/shamsiDate"
+            style="@style/HomeOnPhoto"
+            android:layout_width="match_parent"
+            android:ellipsize="end"
+            android:textSize="@dimen/home_lunar_text"
+            android:visibility="gone" />
+
+        <!-- Holiday chips: today's (only on a holiday) and the next one with a countdown. -->
+        <com.gathin.tvhome.ShrinkRow
+            android:id="@+id/chipRow"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/home_chip_height"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/chipToday"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="5dp"
+                android:background="@drawable/home_chip_today"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="5dp"
+                android:paddingEnd="7dp"
+                android:tag="shrink:3">
+
+                <ImageView
+                    android:layout_width="9dp"
+                    android:layout_height="9dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_star" />
+
+                <TextView
+                    android:id="@+id/chipTodayText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/ui_bold"
+                    android:includeFontPadding="false"
+                    android:singleLine="true"
+                    android:textColor="@color/home_on_accent"
+                    android:textSize="@dimen/home_chip_text" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/chipNext"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/home_chip_next"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="7dp"
+                android:paddingEnd="7dp"
+                android:tag="shrink:1">
+
+                <TextView
+                    android:id="@+id/chipNextName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/ui_bold"
+                    android:includeFontPadding="false"
+                    android:singleLine="true"
+                    android:textColor="@color/home_text"
+                    android:textSize="@dimen/home_chip_text" />
+
+                <TextView
+                    android:id="@+id/chipNextCountdown"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="3dp"
+                    android:fontFamily="@font/ui_bold"
+                    android:includeFontPadding="false"
+                    android:singleLine="true"
+                    android:textColor="@color/home_accent"
+                    android:textSize="@dimen/home_chip_text" />
+            </LinearLayout>
+        </com.gathin.tvhome.ShrinkRow>
+    </LinearLayout>
+
+    <!-- Glass panel: weather (left) and prices (right) -->
+    <LinearLayout
+        android:id="@+id/infoPanel"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="@dimen/home_panel_gap"
+        android:layout_weight="1"
+        android:background="@drawable/home_panel_bg"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/home_panel_pad_h"
+        android:paddingTop="@dimen/home_panel_pad_v"
+        android:paddingEnd="@dimen/home_panel_pad_h"
+        android:paddingBottom="@dimen/home_panel_pad_v">
+
+        <LinearLayout
+            android:layout_width="@dimen/home_weather_column"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <!-- Place · rain line · data time -->
+            <com.gathin.tvhome.ShrinkRow
+                android:layout_width="match_parent"
+                android:layout_height="14dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_pin" />
+
+                <TextView
+                    android:id="@+id/weatherPlace"
+                    style="@style/HomePanelText"
+                    android:layout_marginStart="4dp"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/ui_bold"
+                    android:tag="shrink:1"
+                    android:textSize="@dimen/home_weather_head_text" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <ImageView
+                    android:id="@+id/rainIcon"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:layout_marginStart="8dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_umbrella" />
+
+                <TextView
+                    android:id="@+id/rainText"
+                    style="@style/HomePanelText"
+                    android:layout_marginStart="3dp"
+                    android:fontFamily="@font/ui_bold"
+                    android:textColor="@color/home_rain"
+                    android:textSize="@dimen/home_weather_rain_text" />
+
+                <View
+                    android:id="@+id/weatherDot"
+                    android:layout_width="@dimen/home_dot"
+                    android:layout_height="@dimen/home_dot"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/home_dot" />
+
+                <TextView
+                    android:id="@+id/weatherStamp"
+                    style="@style/HomePanelText"
+                    android:layout_marginStart="3.5dp"
+                    android:fontFamily="@font/ui_medium"
+                    android:fontFeatureSettings="tnum"
+                    android:textColor="#C7FFFFFF"
+                    android:textSize="@dimen/home_weather_stamp_text" />
+            </com.gathin.tvhome.ShrinkRow>
+
+            <!-- Now: icon, temperature, condition and range -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/weatherIcon"
+                    android:layout_width="@dimen/home_weather_icon"
+                    android:layout_height="@dimen/home_weather_icon"
+                    android:contentDescription="@null"
+                    android:src="@drawable/wx_cloudy" />
+
+                <TextView
+                    android:id="@+id/weatherTemp"
+                    style="@style/HomePanelText"
+                    android:layout_marginStart="7dp"
+                    android:layout_marginTop="@dimen/home_temp_trim"
+                    android:layout_marginBottom="@dimen/home_temp_trim"
+                    android:fontFamily="@font/playfair_bold"
+                    android:fontFeatureSettings="lnum"
+                    android:text="--°"
+                    android:textSize="@dimen/home_temp_text" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="7dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/weatherCondition"
+                        style="@style/HomePanelText"
+                        android:layout_width="match_parent"
+                        android:ellipsize="end"
+                        android:fontFamily="@font/ui_bold"
+                        android:textSize="@dimen/home_condition_text" />
+
+                    <TextView
+                        android:id="@+id/weatherRange"
+                        style="@style/HomePanelText"
+                        android:layout_width="match_parent"
+                        android:layout_marginTop="1dp"
+                        android:ellipsize="end"
+                        android:fontFamily="@font/ui_medium"
+                        android:fontFeatureSettings="tnum"
+                        android:textColor="#C7FFFFFF"
+                        android:textSize="@dimen/home_range_text" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 12 hourly columns, built by HomeDashboard -->
+            <LinearLayout
+                android:id="@+id/hourlyRow"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="4dp"
+                android:layout_weight="1"
+                android:orientation="horizontal" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="0.75dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="14dp"
+            android:layout_marginEnd="14dp"
+            android:background="@color/home_rule" />
+
+        <!-- Prices -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/goldBlock"
+                layout="@layout/home_price_block"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.75dp"
+                android:background="@color/home_rule" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <include
+                android:id="@+id/fuelBlock"
+                layout="@layout/home_price_block"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

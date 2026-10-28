@@ -1,264 +1,148 @@
 package com.gathin.tvhome;
-
-import android.animation.ArgbEvaluator;
 import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.LayerDrawable;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.ImageView;
-
-import java.io.File;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import android.widget.TextView;
+import java.util.Calendar;
+import java.util.TimeZone;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
- * The clock screensaver's scene (layout dream_clock): the thin clock and date on black over a slow ambient
- * glow. Every minute the clock drifts to a new spot and the glow shifts colour, so nothing burns in.
- * Shared by ClockDream (the system screensaver) and ClockActivity (Home left idle).
+ * The screensaver in the Home style: a time-of-day color background, time and calendar on the photo, weather with the
+ * 12-hour forecast on glass, air quality and sunrise. Only minute updates, no continuous background animation.
  */
 final class ClockScene {
+    private static final ExecutorService IO=Executors.newSingleThreadExecutor();
+    private final Handler handler=new Handler(Looper.getMainLooper());
+    private final View root,content;
+    private final ImageView photo;
+    private final Context app;
+    private boolean started;
+    private int generation, period=-1;
+    private static final String[] PERIODS={"đêm yên tĩnh","buổi sáng","ban ngày","chiều muộn","lên đèn"};
+    private static final String[] WEEKDAYS={"Thứ Hai","Thứ Ba","Thứ Tư","Thứ Năm","Thứ Sáu","Thứ Bảy","Chủ Nhật"};
+    private final HomeSettings settings;
+    private final Holidays holidays;
+    private java.time.LocalDate shownDay;
+    private final PriceClient.Block gold, fuel;
 
-    private static final long MOVE_MS = 60_000L;
-    /** The glow's colour change: 16 steps over 8 s. Animated per frame it redrew the full-screen gradient ~480 times. */
-    private static final int GLOW_STEPS = 16;
-    private static final long GLOW_STEP_MS = 500L;
-    /** Deep, low-brightness glow colours; the glow is drawn at partial alpha on black. */
-    private static final int[] PALETTE = {0xFF2B5CFF, 0xFF00A39A, 0xFF8A3FFC, 0xFFE0661B, 0xFFD6336C};
-
-    private final Handler handler = new Handler(Looper.getMainLooper());
-    private final Random random = new Random();
-    private final View content;
-    private final ImageView ambient;
-    private final GradientDrawable glow;
-    private int colorIndex;
-    private int glowColor;
-    /** clock_wallpaper or clock_glow false: something else (a picture, or plain black) replaced the coloured glow. */
-    private boolean wallpaperShown;
-    /** clock_wallpaper: the picture start() decodes, its darkening, and the resources to draw it with. */
-    private File wallpaperFile;
-    private int wallpaperShade;
-    private Resources wallpaperRes;
-    /** One number per decode request: a result whose number is no longer the current one is dropped. Main thread only. */
-    private int wallpaperGeneration;
-    /** clock_wallpaper with a collection: the pictures, how long each lasts, and how the next one is picked. */
-    private List<File> rotation;
-    private long rotationMs;
-    private long shownMs;
-    private String order;
-    private Map<String, Set<String>> moods;
-    private String latitude, longitude;
-
-    private final Runnable tick = new Runnable() {
-        @Override
-        public void run() {
-            moveClock();
-            shiftGlow();
-            advanceWallpaper();
-            handler.postDelayed(this, MOVE_MS);
-        }
-    };
-
-    /** root is the inflated dream_clock layout. */
     ClockScene(View root) {
-        content = root.findViewById(R.id.dreamContent);
-        ambient = root.findViewById(R.id.dreamAmbient);
-        glow = new GradientDrawable();
-        glow.setGradientType(GradientDrawable.RADIAL_GRADIENT);
-        ambient.setBackground(glow);
-        ambient.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) ->
-                glow.setGradientRadius((r - l) * 0.55f));
-        colorIndex = random.nextInt(PALETTE.length);
-        setGlow(PALETTE[colorIndex]);
+        this.root=root;this.app=root.getContext().getApplicationContext();content=root.findViewById(R.id.dreamContent);photo=root.findViewById(R.id.dreamPhoto);
+        settings=HomeSettings.load(app);
+        holidays=new Holidays(app);
+        UiFont.apply(root);
+        int accent=app.getColor(R.color.home_accent);
+        android.text.SpannableString f=new android.text.SpannableString("HH:mm");
+        f.setSpan(new android.text.style.ForegroundColorSpan(accent),2,3,0);
+        android.widget.TextClock clock=root.findViewById(R.id.dreamClock);
+        clock.setFormat24Hour(f);clock.setFormat12Hour(f);clock.setTimeZone("Asia/Ho_Chi_Minh");
+        text(R.id.dreamPlace).setText(settings.weatherPlace);
+        gold=new PriceClient.Block(root.findViewById(R.id.dreamGold));
+        fuel=new PriceClient.Block(root.findViewById(R.id.dreamFuel));
+        PriceClient.setUp(app,gold,fuel);
+        PriceClient.show(app,settings,gold,fuel);
+        updateCalendar();
+        showWeather();
     }
-
-    void start() {
-        content.setAlpha(0f);
-        content.post(() -> {
-            placeClock();
-            content.animate().alpha(1f).setDuration(1200).start();
+    private TextView text(int id){return root.findViewById(id);}
+    static int periodForHour(int hour){return hour<5?0:hour<10?1:hour<16?2:hour<18?3:4;}
+    void start(){
+        if(started)return;started=true;generation++;
+        updateScene();handler.postDelayed(tick,60000);refresh.run();
+    }
+    void stop(){started=false;generation++;handler.removeCallbacksAndMessages(null);content.animate().cancel();photo.animate().cancel();photo.setImageDrawable(null);period=-1;}
+    private final Runnable tick=new Runnable(){public void run(){if(!started)return;updateScene();showWeather();PriceClient.show(app,settings,gold,fuel);handler.postDelayed(this,60000);}};
+    private final Runnable refresh=new Runnable(){public void run(){
+        if(!started)return;final int token=generation;
+        IO.execute(()->{
+            PriceClient.fetchIfDue(app,settings);
+            handler.post(()->{if(started&&token==generation)PriceClient.show(app,settings,gold,fuel);});
+            WeatherClient.fetch(app);
+            handler.post(()->{if(started&&token==generation)showWeather();});
         });
-        handler.removeCallbacks(tick);
-        handler.postDelayed(tick, MOVE_MS);
-        if (wallpaperFile != null && !wallpaperShown) loadWallpaper();
+        // Check the 5-minute gold interval; each client only goes to the network when its own TTL is due.
+        handler.postDelayed(this,5*60000L);
+    }};
+
+    /** Weekday, date, lunar date and holiday chips; changes only when the day does. */
+    private void updateCalendar(){
+        java.time.LocalDate today=java.time.LocalDate.now(VietnameseLunar.HANOI);
+        if(today.equals(shownDay))return;
+        shownDay=today;
+        text(R.id.dreamWeekday).setText(WEEKDAYS[today.getDayOfWeek().getValue()-1]);
+        text(R.id.dreamDate).setText(today.getDayOfMonth()+" tháng "+today.getMonthValue()+", "+today.getYear());
+        int[] l=VietnameseLunar.of(app,today);
+        text(R.id.dreamLunar).setText(l==null?"":VietnameseLunar.longText(l));
+        Holidays.Hit now=holidays.today(today), next=holidays.next(today);
+        root.findViewById(R.id.dreamChipToday).setVisibility(now==null?View.GONE:View.VISIBLE);
+        if(now!=null)text(R.id.dreamChipTodayText).setText(now.name);
+        root.findViewById(R.id.dreamChipNext).setVisibility(next==null?View.GONE:View.VISIBLE);
+        if(next!=null){text(R.id.dreamChipNextName).setText(next.name);text(R.id.dreamChipNextCountdown).setText("· "+Holidays.countdown(next.days));}
     }
 
-    void stop() {
-        handler.removeCallbacksAndMessages(null);   // the tick and any glow steps still queued
-        content.animate().cancel();
-        wallpaperGeneration++;   // a decode still running must not attach its picture to a stopped scene
+    private void updateScene(){
+        Calendar c=Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));int next=periodForHour(c.get(Calendar.HOUR_OF_DAY));
+        updateCalendar();
+        text(R.id.dreamPeriod).setText(PERIODS[next]);
+        // A small, discrete shift once a minute instead of a continuously rendered animation.
+        int minute=c.get(Calendar.MINUTE);float dp=root.getResources().getDisplayMetrics().density;
+        content.post(()->{if(!started)return;View parent=(View)content.getParent();
+            float x=(56+(minute%3)*3)*dp, y=(26+(minute%4)*2)*dp;
+            content.setX(Math.min(x,Math.max(0,parent.getWidth()-content.getWidth()-20*dp)));
+            content.setY(Math.min(y,Math.max(0,parent.getHeight()-content.getHeight()-20*dp)));});
+        if(next==period)return;
+        period=next;
+        int top=next==0?0xFF080E1A:next==1?0xFF182A35:next==2?0xFF12313A:next==3?0xFF3A2437:0xFF111C30;
+        root.setBackground(new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{top,0xFF080E18}));
     }
 
-    /**
-     * clock_wallpaper: put the picture Home is showing behind the clock, darkened by clock_wallpaper_dim, in
-     * place of the glow, and carry a collection's rotation on while the screensaver is up. Decoded off the main
-     * thread at screen size in RGB_565 (4 MB at 1080p), like Home's own; until then, or if it cannot be read,
-     * the glow stays.
-     * Call before start(), which starts the decode (again after a stop() that dropped an unfinished one).
-     */
-    void useHomeWallpaper(Context ctx) {
-        Config cfg;
-        try {
-            cfg = Config.load(ctx);
-        } catch (RuntimeException e) {
+    /** The same weather, forecast, air quality and sunrise as the Home panel, from WeatherClient's cache. */
+    private void showWeather(){
+        WeatherClient.Now w=WeatherClient.now(app,settings.rainPercent,settings.rainHours,settings.weatherStaleMinutes*60_000L);
+        View aqiPill=root.findViewById(R.id.dreamAqiPill);
+        aqiPill.setVisibility(w.aqi>=0?View.VISIBLE:View.GONE);
+        if(w.aqi>=0){
+            int v=w.aqi;
+            String label=v<=50?"Tốt":v<=100?"Trung bình":v<=150?"Kém":v<=200?"Xấu":v<=300?"Rất xấu":"Nguy hại";
+            int color=v<=50?0xFF8BE3A8:v<=100?0xFFF5D04C:v<=150?0xFFFFA14D:v<=200?0xFFFF6B5E:v<=300?0xFFC77DFF:0xFFB0485A;
+            text(R.id.dreamAir).setText("AQI "+v+" · "+label);
+            root.findViewById(R.id.dreamAqiDot).setBackgroundTintList(android.content.res.ColorStateList.valueOf(color));
+        }
+        root.findViewById(R.id.dreamSunrisePill).setVisibility(w.sunrise>0?View.VISIBLE:View.GONE);
+        if(w.sunrise>0)text(R.id.dreamSunrise).setText("Mặt trời mọc "+clock(w.sunrise));
+        android.widget.ImageView icon=root.findViewById(R.id.dreamWeatherIcon);
+        android.widget.ImageView rainIcon=root.findViewById(R.id.dreamRainIcon);
+        if(!w.ok){
+            icon.setImageResource(R.drawable.wx_cloudy);
+            text(R.id.dreamWeatherTemperature).setText("--°");
+            text(R.id.dreamWeatherSummary).setText("Chưa có dữ liệu thời tiết");
+            text(R.id.dreamWeatherDetails).setText("");
+            text(R.id.dreamRain).setText("");rainIcon.setVisibility(View.GONE);
+            text(R.id.dreamWeatherStamp).setText("Chờ cập nhật");
+            ((android.widget.LinearLayout)root.findViewById(R.id.dreamHourly)).removeAllViews();
             return;
         }
-        if (!cfg.clockWallpaper) {
-            // clock_glow false: plain black behind the clock (OLED); the clock itself still moves every minute.
-            if (!cfg.clockGlow) {
-                wallpaperShown = true;   // also stops the glow's colour cycle
-                ambient.setBackground(null);
-            }
-            return;
+        icon.setImageResource(HomeDashboard.icon(w.code,w.day));
+        text(R.id.dreamWeatherTemperature).setText(w.temp+"°");
+        text(R.id.dreamWeatherSummary).setText(WeatherClient.describe(w.code));
+        text(R.id.dreamWeatherDetails).setText(w.min+"° – "+w.max+"° · Ẩm "+w.humidity+"%");
+        TextView rain=text(R.id.dreamRain);
+        if(w.rainAt>0){
+            rainIcon.setVisibility(View.VISIBLE);rain.setTextColor(app.getColor(R.color.home_rain));
+            rain.setText((w.rainAt<=System.currentTimeMillis()?"Đang có thể mưa":"Mưa từ "+clock(w.rainAt).substring(0,2)+":00")+" · "+w.rainChance+"%");
+        }else{
+            rainIcon.setVisibility(View.GONE);rain.setTextColor(app.getColor(R.color.home_text_80));
+            rain.setText("Không mưa "+settings.rainHours+" giờ tới");
         }
-        // What Home plays, and Config puts the single wallpaper in it when a theme has no collection.
-        // Reading cfg.wallpaper first held the screensaver on wallpaper.jpg while Home rotated.
-        if (cfg.wallpapers.isEmpty()) {
-            wallpaperFile = null;
-        } else {
-            // Start on the picture Home is showing. WallpaperPlayer records it under the same
-            // preferences and the screensaver runs in the same process, so this is just a read.
-            rotation = new ArrayList<>(cfg.wallpapers);
-            String shown = ctx.getSharedPreferences("wallpaper_rotation", Context.MODE_PRIVATE)
-                    .getString("image", "");
-            File current = WallpaperRotation.find(rotation, shown);
-            wallpaperFile = current != null ? current : rotation.get(0);
-            // Home only rotates while it is visible, so the screensaver carries the rotation on
-            // itself; without this it holds one picture for as long as it is up.
-            rotationMs = cfg.wallpaperRotationMinutes * 60_000L;
-            order = cfg.wallpaperOrder;
-            moods = cfg.wallpaperMoods;
-            latitude = moods.isEmpty() ? "" : ctx.getString(R.string.latitude);
-            longitude = moods.isEmpty() ? "" : ctx.getString(R.string.longitude);
-        }
-        wallpaperShade = (cfg.clockWallpaperDim * 255 / 100) << 24;
-        wallpaperRes = ctx.getResources();
+        text(R.id.dreamWeatherStamp).setText(clock(w.observed));
+        root.findViewById(R.id.dreamWeatherDot).setBackgroundTintList(android.content.res.ColorStateList.valueOf(app.getColor(w.stale?R.color.home_stale:R.color.home_fresh)));
+        HourlyStrip.fill(root.findViewById(R.id.dreamHourly),w,settings.rainPercent);
     }
-
-    private void loadWallpaper() {
-        File file = wallpaperFile;
-        int shade = wallpaperShade;
-        Resources res = wallpaperRes;
-        DisplayMetrics dm = res.getDisplayMetrics();
-        int w = dm.widthPixels, h = dm.heightPixels;
-        int generation = ++wallpaperGeneration;
-        new Thread(() -> {
-            Bitmap bmp = decode(file, w, h);
-            if (bmp == null) return;
-            handler.post(() -> {
-                if (generation != wallpaperGeneration || wallpaperShown) {
-                    bmp.recycle();   // stopped meanwhile (or already shown): this picture was never attached
-                    return;
-                }
-                wallpaperShown = true;
-                // As the image, not the background: a background is stretched to the view, so a picture of
-                // another shape than the screen would be distorted. centerCrop scales and crops it like Home.
-                ambient.setBackground(null);
-                ambient.setImageDrawable(new LayerDrawable(new Drawable[]{
-                        new BitmapDrawable(res, bmp), new ColorDrawable(shade)}));
-            });
-        }, "clock-wallpaper").start();
-    }
-
-    /** WallpaperPlayer's decode: sampled and scaled down to cover the screen, never bigger than 4K. */
-    private static Bitmap decode(File file, int screenW, int screenH) {
-        try {
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeFile(file.getPath(), options);
-            int width = options.outWidth, height = options.outHeight;
-            if (width <= 0 || height <= 0) return null;
-            int sample = WallpaperSize.sampleSize(width, height, screenW, screenH);
-            if (!WallpaperSize.accepted(width / sample, height / sample)) return null;
-            options.inJustDecodeBounds = false;
-            options.inSampleSize = sample;
-            int[] scale = WallpaperSize.coverScale(width / sample, height / sample, screenW, screenH);
-            if (scale != null) {
-                options.inScaled = true;
-                options.inDensity = scale[0];
-                options.inTargetDensity = scale[1];
-            }
-            options.inPreferredConfig = Bitmap.Config.RGB_565;
-            return BitmapFactory.decodeFile(file.getPath(), options);
-        } catch (Exception | OutOfMemoryError failure) {
-            return null;
-        }
-    }
-
-    /** Step to the next picture once its turn is up; the tick already runs every minute. */
-    private void advanceWallpaper() {
-        if (rotation == null || rotationMs <= 0 || rotation.size() < 2) return;
-        shownMs += MOVE_MS;
-        if (shownMs < rotationMs) return;
-        shownMs = 0;
-        // The same pick as Home's, so a shuffled collection stays shuffled and wallpaper_moods still
-        // decides what may show at this hour.
-        File next = WallpaperRotation.pick(playable(), wallpaperFile.getName(), order, random);
-        if (next.equals(wallpaperFile)) return;   // a mood group of one
-        wallpaperFile = next;
-        wallpaperShown = false;
-        loadWallpaper();
-    }
-
-    /** WallpaperPlayer's filter: the pictures wallpaper_moods allows at this hour, or all of them. */
-    private List<File> playable() {
-        if (moods.isEmpty()) return rotation;
-        LocalDateTime now = LocalDateTime.now();
-        int[] sun = WallpaperMood.sun(now.toLocalDate(), latitude, longitude, ZoneId.systemDefault());
-        return WallpaperMood.select(rotation, moods,
-                WallpaperMood.timeOfDay(now.getHour() * 60 + now.getMinute(), sun[0], sun[1]));
-    }
-
-    private void moveClock() {
-        content.animate().alpha(0f).setDuration(900).withLayer().withEndAction(() -> {
-            placeClock();
-            content.animate().alpha(1f).setDuration(1200).withLayer().start();
-        }).start();
-    }
-
-    /** A random spot that keeps the whole clock on screen, with the glow centred behind it. */
-    private void placeClock() {
-        View parent = (View) content.getParent();
-        int maxX = Math.max(0, parent.getWidth() - content.getWidth());
-        int maxY = Math.max(0, parent.getHeight() - content.getHeight());
-        float x = maxX * (0.1f + 0.8f * random.nextFloat());
-        float y = maxY * (0.1f + 0.8f * random.nextFloat());
-        content.setX(x);
-        content.setY(y);
-        if (parent.getWidth() > 0 && parent.getHeight() > 0) {
-            glow.setGradientCenter((x + content.getWidth() / 2f) / parent.getWidth(),
-                    (y + content.getHeight() / 2f) / parent.getHeight());
-        }
-    }
-
-    private void shiftGlow() {
-        if (wallpaperShown) return;
-        int from = glowColor;
-        colorIndex = (colorIndex + 1) % PALETTE.length;
-        int to = PALETTE[colorIndex];
-        ArgbEvaluator mix = new ArgbEvaluator();
-        for (int i = 1; i <= GLOW_STEPS; i++) {
-            float f = (float) i / GLOW_STEPS;
-            handler.postDelayed(() -> setGlow((int) mix.evaluate(f, from, to)), i * GLOW_STEP_MS);
-        }
-    }
-
-    private void setGlow(int color) {
-        glowColor = color;
-        int c = color & 0x00FFFFFF;
-        glow.setColors(new int[]{0x40000000 | c, 0x14000000 | c, 0x00000000 | c});
+    private static String clock(long ms){
+        java.text.SimpleDateFormat f=new java.text.SimpleDateFormat("HH:mm",java.util.Locale.US);f.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));return f.format(new java.util.Date(ms));
     }
 }

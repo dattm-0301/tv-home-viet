@@ -12,11 +12,6 @@ import android.view.View;
  * this one only ever starts from Home. Any key returns to Home.
  */
 public class ClockActivity extends Activity {
-    @Override
-    protected void attachBaseContext(android.content.Context base) {
-        super.attachBaseContext(LauncherLocale.wrap(base));   // locale
-    }
-
 
     private ClockScene scene;
 
@@ -27,7 +22,6 @@ public class ClockActivity extends Activity {
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE);
         scene = new ClockScene(getWindow().getDecorView());
-        scene.useHomeWallpaper(this);
     }
 
     @Override

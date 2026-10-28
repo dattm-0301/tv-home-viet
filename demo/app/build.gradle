@@ -1,0 +1,17 @@
+plugins { id 'com.android.application' }
+android {
+ namespace 'com.tvhomeviet.demo'
+ compileSdk 34
+ defaultConfig { applicationId 'com.tvhomeviet.demo'; minSdk 26; targetSdk 34; versionCode 1; versionName 'demo' }
+ flavorDimensions 'sample'
+ productFlavors {
+  library { dimension 'sample'; applicationIdSuffix '.library'; resValue 'string', 'app_name', 'Demo · Thư viện' }
+  cinema { dimension 'sample'; applicationIdSuffix '.cinema'; resValue 'string', 'app_name', 'Demo · Phim' }
+  music { dimension 'sample'; applicationIdSuffix '.music'; resValue 'string', 'app_name', 'Demo · Âm nhạc' }
+  radio { dimension 'sample'; applicationIdSuffix '.radio'; resValue 'string', 'app_name', 'Demo · Radio' }
+  cast { dimension 'sample'; applicationIdSuffix '.cast'; resValue 'string', 'app_name', 'Demo · Chiếu' }
+  web { dimension 'sample'; applicationIdSuffix '.web'; resValue 'string', 'app_name', 'Demo · Web' }
+  games { dimension 'sample'; applicationIdSuffix '.games'; resValue 'string', 'app_name', 'Demo · Trò chơi' }
+  files { dimension 'sample'; applicationIdSuffix '.files'; resValue 'string', 'app_name', 'Demo · Tệp' }
+ }
+}

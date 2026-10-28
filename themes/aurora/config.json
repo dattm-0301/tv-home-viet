@@ -1,4 +1,14 @@
 {
-  "background_color": "#070A14",
-  "wallpaper": true
+  "background_color": "#17152D",
+  "wallpaper": false,
+  "sky_intensity": 55,
+  "columns": 6,
+  "weather_place": "Hà Nội",
+  "weather_latitude": 21.0285,
+  "weather_longitude": 105.8542,
+  "show_aqi": true,
+  "gold_brand": "doji",
+  "gold_refresh_minutes": 5,
+  "fuel_refresh_minutes": 15,
+  "home_idle_clock_minutes": 5
 }

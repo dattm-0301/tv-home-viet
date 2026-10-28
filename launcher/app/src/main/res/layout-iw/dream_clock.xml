@@ -1,72 +1,382 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Hebrew screensaver: right-aligned clock/date, RTL date text, LTR time numerals. -->
+<!-- Screensaver (ClockDream, ClockActivity) in the Home style: Hanoi photo, time and calendar on the photo, a glass
+     weather panel with the 12-hour forecast, and air quality and sunrise pills. ClockScene fills it
+     and shifts dreamContent a few pixels each minute so nothing burns in. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FF000000">
+    android:background="#080D13">
 
-    <!-- The glow is its background; clock_wallpaper puts the picture in it, cropped like Home's. -->
     <ImageView
-        android:id="@+id/dreamAmbient"
+        android:id="@+id/dreamPhoto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        android:importantForAccessibility="no" />
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop" />
+
+    <View
+        android:id="@+id/dreamShade"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <LinearLayout
         android:id="@+id/dreamContent"
-        android:layoutDirection="rtl"
-        android:gravity="right"
-        android:layout_width="wrap_content"
+        android:layout_width="520dp"
         android:layout_height="wrap_content"
+        android:clipChildren="false"
         android:orientation="vertical">
 
+        <!-- "Hà Nội · đêm yên tĩnh" -->
+        <TextView
+            android:id="@+id/dreamPeriod"
+            style="@style/HomeOnPhoto"
+            android:layout_marginTop="-2.4dp"
+            android:layout_marginBottom="-2.4dp"
+            android:fontFamily="@font/dancing_bold"
+            android:paddingEnd="3dp"
+            android:textSize="22sp" />
+
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layoutDirection="ltr"
-            android:baselineAligned="true">
+            android:layout_marginTop="10dp"
+            android:baselineAligned="true"
+            android:clipChildren="false"
+            android:orientation="horizontal">
 
-            <TextClock
-                android:id="@+id/dreamAmPm"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"
-                android:format12Hour="a"
-                android:format24Hour=""
-                android:textColor="#99FFFFFF"
-                android:textSize="22sp"
-                android:fontFamily="@string/font_medium"
-                android:letterSpacing="0.08"
-                android:textAllCaps="true" />
+            <TextView
+                android:id="@+id/dreamWeekday"
+                style="@style/HomeOnPhoto"
+                android:layout_marginStart="-3dp"
+                android:layout_marginTop="@dimen/home_weekday_trim"
+                android:layout_marginBottom="@dimen/home_weekday_trim"
+                android:fontFamily="@font/dancing_bold"
+                android:paddingStart="3dp"
+                android:paddingEnd="3dp"
+                android:textColor="@color/home_accent"
+                android:textSize="@dimen/home_weekday_text" />
 
-            <TextClock
-                android:id="@+id/dreamClock"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:format12Hour="h:mm"
-                android:format24Hour="HH:mm"
-                android:textColor="#E6FFFFFF"
-                android:textSize="120sp"
-                android:fontFamily="@string/font_extralight"
-                android:letterSpacing="-0.04"
-                android:includeFontPadding="false" />
+            <TextView
+                android:id="@+id/dreamDate"
+                style="@style/HomeOnPhoto"
+                android:layout_marginStart="5dp"
+                android:fontFamily="@font/ui_bold"
+                android:fontFeatureSettings="tnum"
+                android:textSize="@dimen/home_date_text" />
         </LinearLayout>
 
         <TextClock
-            android:id="@+id/dreamDate"
-            android:layout_width="wrap_content"
+            android:id="@+id/dreamClock"
+            style="@style/HomeOnPhoto"
+            android:layout_marginTop="-24dp"
+            android:layout_marginBottom="-24dp"
+            android:fontFamily="@font/playfair_bold"
+            android:fontFeatureSettings="lnum,tnum"
+            android:format12Hour="HH:mm"
+            android:format24Hour="HH:mm"
+            android:letterSpacing="-0.02"
+            android:textSize="110sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:textDirection="rtl"
-            android:gravity="right"
-            android:format12Hour="@string/date_format"
-            android:format24Hour="@string/date_format"
-            android:textColor="#8CFFFFFF"
-            android:textSize="18sp"
-            android:fontFamily="@string/font_regular"
-            android:letterSpacing="0.14"
-            android:textAllCaps="true" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <View
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:background="@drawable/home_moon" />
+
+            <TextView
+                android:id="@+id/dreamLunar"
+                style="@style/HomeOnPhoto"
+                android:layout_width="0dp"
+                android:layout_marginStart="7dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:fontFamily="@font/playfair_italic"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <com.gathin.tvhome.ShrinkRow
+            android:layout_width="match_parent"
+            android:layout_height="19dp"
+            android:layout_marginTop="7dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/dreamChipToday"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/home_chip_today"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="6dp"
+                android:paddingEnd="8dp"
+                android:tag="shrink:3">
+
+                <ImageView
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_star" />
+
+                <TextView
+                    android:id="@+id/dreamChipTodayText"
+                    style="@style/HomePanelText"
+                    android:layout_width="0dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/ui_bold"
+                    android:textColor="@color/home_on_accent"
+                    android:textSize="10sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/dreamChipNext"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/home_chip_next"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:tag="shrink:1">
+
+                <TextView
+                    android:id="@+id/dreamChipNextName"
+                    style="@style/HomePanelText"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/ui_bold"
+                    android:textSize="10sp" />
+
+                <TextView
+                    android:id="@+id/dreamChipNextCountdown"
+                    style="@style/HomePanelText"
+                    android:layout_marginStart="3dp"
+                    android:fontFamily="@font/ui_bold"
+                    android:textColor="@color/home_accent"
+                    android:textSize="10sp" />
+            </LinearLayout>
+        </com.gathin.tvhome.ShrinkRow>
+
+        <!-- Weather on glass -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/home_panel_bg"
+            android:orientation="vertical"
+            android:paddingStart="14dp"
+            android:paddingTop="11dp"
+            android:paddingEnd="14dp"
+            android:paddingBottom="10dp">
+
+            <com.gathin.tvhome.ShrinkRow
+                android:layout_width="match_parent"
+                android:layout_height="14dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_pin" />
+
+                <TextView
+                    android:id="@+id/dreamPlace"
+                    style="@style/HomePanelText"
+                    android:layout_marginStart="4dp"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/ui_bold"
+                    android:tag="shrink:1"
+                    android:textSize="@dimen/home_weather_head_text" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <ImageView
+                    android:id="@+id/dreamRainIcon"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:layout_marginStart="8dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_umbrella" />
+
+                <TextView
+                    android:id="@+id/dreamRain"
+                    style="@style/HomePanelText"
+                    android:layout_marginStart="3dp"
+                    android:fontFamily="@font/ui_bold"
+                    android:textColor="@color/home_rain"
+                    android:textSize="@dimen/home_weather_rain_text" />
+
+                <View
+                    android:id="@+id/dreamWeatherDot"
+                    android:layout_width="@dimen/home_dot"
+                    android:layout_height="@dimen/home_dot"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/home_dot" />
+
+                <TextView
+                    android:id="@+id/dreamWeatherStamp"
+                    style="@style/HomePanelText"
+                    android:layout_marginStart="3.5dp"
+                    android:fontFamily="@font/ui_medium"
+                    android:fontFeatureSettings="tnum"
+                    android:textColor="#C7FFFFFF"
+                    android:textSize="@dimen/home_weather_stamp_text" />
+            </com.gathin.tvhome.ShrinkRow>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginTop="5dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/dreamWeatherIcon"
+                    android:layout_width="@dimen/home_weather_icon"
+                    android:layout_height="@dimen/home_weather_icon"
+                    android:contentDescription="@null"
+                    android:src="@drawable/wx_cloudy" />
+
+                <TextView
+                    android:id="@+id/dreamWeatherTemperature"
+                    style="@style/HomePanelText"
+                    android:layout_marginStart="7dp"
+                    android:layout_marginTop="@dimen/home_temp_trim"
+                    android:layout_marginBottom="@dimen/home_temp_trim"
+                    android:fontFamily="@font/playfair_bold"
+                    android:fontFeatureSettings="lnum"
+                    android:text="--°"
+                    android:textSize="@dimen/home_temp_text" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="7dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/dreamWeatherSummary"
+                        style="@style/HomePanelText"
+                        android:layout_width="match_parent"
+                        android:ellipsize="end"
+                        android:fontFamily="@font/ui_bold"
+                        android:textSize="@dimen/home_condition_text" />
+
+                    <TextView
+                        android:id="@+id/dreamWeatherDetails"
+                        style="@style/HomePanelText"
+                        android:layout_width="match_parent"
+                        android:layout_marginTop="1dp"
+                        android:ellipsize="end"
+                        android:fontFamily="@font/ui_medium"
+                        android:fontFeatureSettings="tnum"
+                        android:textColor="#C7FFFFFF"
+                        android:textSize="@dimen/home_range_text" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/dreamHourly"
+                android:layout_width="match_parent"
+                android:layout_height="96dp"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal" />
+        </LinearLayout>
+
+        <!-- Air quality and sunrise -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/home_pill_height"
+            android:layout_marginTop="9dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/dreamAqiPill"
+                style="@style/HomePill">
+
+                <View
+                    android:id="@+id/dreamAqiDot"
+                    android:layout_width="@dimen/home_pill_dot"
+                    android:layout_height="@dimen/home_pill_dot"
+                    android:background="@drawable/home_dot" />
+
+                <TextView
+                    android:id="@+id/dreamAir"
+                    style="@style/HomePanelText"
+                    android:layout_marginStart="4dp"
+                    android:fontFamily="@font/ui_bold"
+                    android:textSize="@dimen/home_pill_text" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/dreamSunrisePill"
+                style="@style/HomePill"
+                android:layout_marginStart="6dp">
+
+                <ImageView
+                    android:layout_width="11dp"
+                    android:layout_height="11dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_sunrise" />
+
+                <TextView
+                    android:id="@+id/dreamSunrise"
+                    style="@style/HomePanelText"
+                    android:layout_marginStart="4dp"
+                    android:fontFamily="@font/ui_medium"
+                    android:textColor="@color/home_text_80"
+                    android:textSize="@dimen/home_pill_text" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Gold and fuel on glass, bottom right (PriceClient, same blocks as the Home panel). -->
+    <LinearLayout
+        android:id="@+id/dreamPrices"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="28dp"
+        android:layout_marginBottom="28dp"
+        android:background="@drawable/home_panel_bg"
+        android:orientation="vertical"
+        android:paddingStart="14dp"
+        android:paddingTop="11dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="11dp">
+
+        <include
+            android:id="@+id/dreamGold"
+            layout="@layout/home_price_block"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.75dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:background="@color/home_rule" />
+
+        <include
+            android:id="@+id/dreamFuel"
+            layout="@layout/home_price_block"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
     </LinearLayout>
 </FrameLayout>

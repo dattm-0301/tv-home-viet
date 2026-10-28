@@ -1,9 +1,14 @@
 {
-  "dock_apps": ["com.netflix.ninja", "com.amazon.amazonvideo.livingroom", "com.google.android.youtube.tv", "in.startv.hotstar"],
-  "hidden_apps": ["com.mediatek.wwtv.tvcenter", "com.mitv.gallery"],
-  "columns": 4,
-  "rows_below_dock": 0,
-  "reduced_motion": false,
-  "background_color": "#000000",
-  "wallpaper": false
+  "background_color": "#08121F",
+  "wallpaper": false,
+  "sky_intensity": 38,
+  "columns": 6,
+  "weather_place": "Hà Nội",
+  "weather_latitude": 21.0285,
+  "weather_longitude": 105.8542,
+  "show_aqi": true,
+  "gold_brand": "doji",
+  "gold_refresh_minutes": 5,
+  "fuel_refresh_minutes": 15,
+  "home_idle_clock_minutes": 5
 }

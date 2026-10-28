@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="home_accent">#FFF3C77A</color>
+    <color name="home_accent_soft">#2EF3C77A</color>
+    <color name="home_on_accent">#FF12131A</color>
+    <color name="home_text">#FFFFFFFF</color>
+    <color name="home_text_80">#CCFFFFFF</color>
+    <color name="home_text_70">#B3FFFFFF</color>
+    <!-- Glass: rgba(14,16,26,0.52) dock, rgba(14,16,26,0.55) panel (design's panelAlpha) -->
+    <color name="home_dock_fill">#850E101A</color>
+    <color name="home_panel_fill">#8C0E101A</color>
+    <color name="home_glass_stroke">#29FFFFFF</color>
+    <color name="home_round_fill">#1AFFFFFF</color>
+    <color name="home_block_fill">#0FFFFFFF</color>
+    <color name="home_rule">#24FFFFFF</color>
+    <color name="home_fresh">#FF8BE3A8</color>
+    <color name="home_stale">#FFFFB547</color>
+    <color name="home_rain">#FFA9CCFF</color>
+    <color name="home_rain_fill">#336EAAFF</color>
+    <color name="home_rain_stroke">#B396C3FF</color>
+    <color name="home_focus_fill">#F5FFFFFF</color>
+    <color name="home_focus_text">#FF111111</color>
+</resources>

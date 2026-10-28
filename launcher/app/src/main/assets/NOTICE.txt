@@ -1,0 +1,6 @@
+Weather: Open-Meteo.com. Air quality: CAMS forecasts through Open-Meteo (modeled, US AQI).
+Vietnamese lunar month starts 1999–2101 were computed at UTC+7 using Ho Ngoc Duc's amlich-aa98.js.
+Copyright (c) 2006 Ho Ngoc Duc. All Rights Reserved.
+Astronomical algorithms from "Astronomical Algorithms" by Jean Meeus, 1998.
+Permission to use, copy, modify, and redistribute this software and its documentation for personal, non-commercial use is hereby granted provided that this copyright notice and appropriate documentation appears in all copies.
+The lunar table is distributed under these original terms, not MIT. See THIRD_PARTY.md.

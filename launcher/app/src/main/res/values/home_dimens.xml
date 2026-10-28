@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home redesign, final canvas (Qc9G9bUraKckfXKdYGXGLS v10), 1920×1080 px at density 2: every value is the canvas
+     pixel size divided by 2. Tweak the design here, not in the layouts. -->
+<resources>
+    <!-- Page -->
+    <dimen name="home_side_margin">56dp</dimen>              <!-- 112 px -->
+
+    <!-- Top left: greeting + AQI and sunrise pills (y 50–142) -->
+    <dimen name="home_greeting_top">25dp</dimen>
+    <dimen name="home_greeting_text">24sp</dimen>             <!-- 48 px Dancing Script -->
+    <dimen name="home_greeting_trim">-2.4dp</dimen>
+    <dimen name="home_pill_height">17dp</dimen>               <!-- 34 px -->
+    <dimen name="home_pill_text">10sp</dimen>                 <!-- 20 px -->
+    <dimen name="home_pill_dot">6dp</dimen>
+
+    <!-- Collapsed bar (scrolled, when "Thu gọn widget khi cuộn" is on) -->
+    <dimen name="home_compact_time_text">38sp</dimen>         <!-- 76 px -->
+    <dimen name="home_compact_time_trim">-7dp</dimen>
+    <dimen name="home_compact_line_text">12sp</dimen>
+    <dimen name="home_compact_lunar_text">15sp</dimen>
+    <dimen name="home_compact_sub_text">10sp</dimen>
+
+    <!-- Top dock: one glass capsule, top right -->
+    <dimen name="home_dock_top">23dp</dimen>                  <!-- 46 px -->
+    <dimen name="home_dock_height">48dp</dimen>               <!-- 96 px -->
+    <dimen name="home_dock_radius">24dp</dimen>
+    <dimen name="home_dock_padding">6dp</dimen>
+    <dimen name="home_dock_gap">4dp</dimen>
+    <dimen name="home_dock_divider_height">22dp</dimen>
+    <dimen name="home_status_height">36dp</dimen>             <!-- 72 px -->
+    <dimen name="home_status_max_width">145dp</dimen>         <!-- 290 px -->
+    <dimen name="home_status_pad_start">4dp</dimen>
+    <dimen name="home_status_pad_end">12dp</dimen>
+    <dimen name="home_status_icon_gap">7dp</dimen>
+    <dimen name="home_status_well">28dp</dimen>               <!-- 56 px accent circle -->
+    <dimen name="home_status_label_text">8.5sp</dimen>        <!-- 17 px, sentence case -->
+    <dimen name="home_status_value_text">11.5sp</dimen>       <!-- 23 px -->
+    <dimen name="home_round_button">36dp</dimen>              <!-- 72 px -->
+
+    <!-- Widget row: x 112–1808, y 165–459. Left: time on the photo; right: glass panel -->
+    <dimen name="home_panel_top">82.5dp</dimen>
+    <dimen name="home_panel_height">147dp</dimen>
+    <dimen name="home_panel_radius">17dp</dimen>
+    <dimen name="home_panel_pad_h">14dp</dimen>
+    <dimen name="home_panel_pad_v">10dp</dimen>
+    <dimen name="home_panel_gap">20dp</dimen>
+    <dimen name="home_clock_column">240dp</dimen>             <!-- 480 px -->
+    <dimen name="home_weekday_text">23sp</dimen>
+    <dimen name="home_date_text">14sp</dimen>
+    <dimen name="home_time_text">75sp</dimen>                 <!-- 150 px -->
+    <dimen name="home_lunar_text">13sp</dimen>
+    <dimen name="home_moon">13dp</dimen>
+    <dimen name="home_chip_height">17dp</dimen>
+    <dimen name="home_chip_text">9.5sp</dimen>
+    <!-- Line boxes as in the design (CSS line-height): each text gives back (own line − design line) / 2
+         above and below as a negative margin. -->
+    <dimen name="home_weekday_trim">-2.3dp</dimen>
+    <dimen name="home_time_trim">-16.5dp</dimen>              <!-- 75sp Playfair, line 0.9 -->
+    <dimen name="home_lunar_trim">-0.8dp</dimen>
+
+    <!-- Weather column (700 px) -->
+    <dimen name="home_weather_column">350dp</dimen>
+    <dimen name="home_weather_head_text">10.5sp</dimen>
+    <dimen name="home_weather_rain_text">9sp</dimen>
+    <dimen name="home_weather_stamp_text">9sp</dimen>
+    <dimen name="home_weather_icon">22dp</dimen>
+    <dimen name="home_temp_text">33sp</dimen>                 <!-- 66 px -->
+    <dimen name="home_temp_trim">-7.3dp</dimen>
+    <dimen name="home_condition_text">11sp</dimen>
+    <dimen name="home_range_text">9sp</dimen>
+    <dimen name="home_hour_text">8sp</dimen>
+    <dimen name="home_hour_icon">12dp</dimen>
+    <dimen name="home_hour_temp_text">9sp</dimen>
+    <dimen name="home_hour_bar_height">15dp</dimen>
+    <dimen name="home_hour_pct_text">7.5sp</dimen>
+    <dimen name="home_dot">4.5dp</dimen>
+
+    <!-- Price column (~360 px) -->
+    <dimen name="home_price_head_text">10.5sp</dimen>
+    <dimen name="home_price_stamp_text">8sp</dimen>
+    <dimen name="home_gold_big_text">30sp</dimen>             <!-- 60 px -->
+    <dimen name="home_fuel_big_text">26sp</dimen>             <!-- 52 px -->
+    <dimen name="home_price_small_text">16sp</dimen>          <!-- 32 px -->
+    <dimen name="home_price_caption_text">8sp</dimen>
+    <dimen name="home_gold_big_trim">-4.9dp</dimen>
+    <dimen name="home_fuel_big_trim">-4.3dp</dimen>
+    <dimen name="home_price_small_trim">-2.7dp</dimen>
+
+    <!-- Apps header at y 488 -->
+    <dimen name="home_apps_header_top">14.5dp</dimen>
+    <dimen name="home_apps_header_height">26dp</dimen>
+    <dimen name="home_apps_title_text">21sp</dimen>
+    <dimen name="home_apps_count_text">11sp</dimen>
+    <dimen name="home_header_button_text">10.5sp</dimen>
+
+    <!-- App rails: start y 560 (home) or 166 (collapsed) -->
+    <dimen name="home_rails_top">280dp</dimen>
+    <dimen name="home_rails_top_collapsed">83dp</dimen>
+    <dimen name="home_rail_gap">8dp</dimen>
+    <dimen name="home_rail_head_height">16dp</dimen>
+    <dimen name="home_rail_head_gap">6dp</dimen>
+    <dimen name="home_rail_icon_box">16dp</dimen>
+    <dimen name="home_rail_title_text">12.5sp</dimen>
+    <dimen name="home_rail_count_text">9.5sp</dimen>
+    <dimen name="home_tile_width">110dp</dimen>               <!-- 220 px -->
+    <dimen name="home_tile_height">62dp</dimen>               <!-- 124 px -->
+    <dimen name="home_tile_radius">10dp</dimen>
+    <dimen name="home_tile_gap">14dp</dimen>
+    <dimen name="home_tile_name_text">12sp</dimen>
+    <dimen name="home_segment_divider_space">20dp</dimen>
+    <dimen name="home_badge_size">15dp</dimen>
+    <dimen name="home_badge_text">8.5sp</dimen>
+
+    <!-- Brightness panel -->
+    <dimen name="home_bright_width">300dp</dimen>
+    <dimen name="home_bright_value_text">48sp</dimen>
+</resources>

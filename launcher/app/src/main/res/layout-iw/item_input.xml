@@ -16,11 +16,11 @@
         android:id="@+id/status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@drawable/pill_text_dim"
+        android:textColor="@color/pill_text_dim"
         android:duplicateParentState="true"
         android:textSize="11sp"
         android:textDirection="locale"
-        android:fontFamily="@string/font_body"
+        android:fontFamily="@font/outfit"
         android:letterSpacing="0.04" />
 
     <View
@@ -37,10 +37,10 @@
         android:layout_weight="1"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="10dp"
-        android:textColor="@drawable/pill_text"
+        android:textColor="@color/pill_text"
         android:duplicateParentState="true"
         android:textSize="15sp"
-        android:fontFamily="@string/font_medium"
+        android:fontFamily="@font/outfit_medium"
         android:gravity="right"
         android:textDirection="locale"
         android:singleLine="true" />
@@ -49,7 +49,7 @@
         android:id="@+id/icon"
         android:layout_width="20dp"
         android:layout_height="20dp"
-        android:tint="@drawable/pill_text"
+        android:tint="@color/pill_text"
         android:duplicateParentState="true"
         android:contentDescription="@null" />
 </LinearLayout>
