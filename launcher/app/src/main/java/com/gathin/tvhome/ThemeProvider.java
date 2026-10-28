@@ -21,6 +21,27 @@ import java.io.FileNotFoundException;
  */
 public class ThemeProvider extends ContentProvider {
 
+    private static final java.util.concurrent.atomic.AtomicBoolean PRICE_REFRESHING = new java.util.concurrent.atomic.AtomicBoolean();
+
+    @Override public android.os.Bundle call(String method, String arg, android.os.Bundle extras) {
+        // ContentProvider.call does not automatically enforce read/write permissions on every Android version.
+        getContext().enforceCallingOrSelfPermission("android.permission.WRITE_SECURE_SETTINGS", "Owner-only market diagnostics");
+        android.os.Bundle result = new android.os.Bundle();
+        if ("price_status".equals(method)) {
+            result.putString("status", PriceClient.status(getContext()).toString());
+        } else if ("refresh_prices".equals(method)) {
+            if (PRICE_REFRESHING.compareAndSet(false, true)) {
+                android.content.Context app = getContext().getApplicationContext();
+                new Thread(() -> {
+                    try { PriceClient.refreshNow(app); }
+                    finally { PRICE_REFRESHING.set(false); }
+                }, "owner-price-check").start();
+            }
+            result.putBoolean("scheduled", true);
+        } else throw new IllegalArgumentException("Unknown owner command");
+        return result;
+    }
+
     private File file(Uri uri) throws FileNotFoundException {
         String path = ThemeFiles.path(uri.getPathSegments());
         File dir = Config.dir(getContext());

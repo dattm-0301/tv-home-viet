@@ -9,3 +9,5 @@
 - **Weather / AQI**: Open-Meteo; CAMS modeled air quality via Open-Meteo. Attribution is retained in the in-app assets notice and PRIVACY.md. See https://open-meteo.com/ and the provider's usage terms before commercial / high-volume use.
 
 No Hanoi photograph collection or third-party movie / streaming APK is distributed in this package. Any third-party app shown in a screenshot must be identified in its caption; sample demo apps contain no media and provide no streaming service.
+
+- **GlobalSign Root R46**: public TLS CA certificate from https://secure.globalsign.com/cacert/rootr46.crt, independently downloaded from the CA over HTTPS; [CA documentation](https://support.globalsign.com/ca-certificates/globalsign-root-certificates). SHA-256: `4FA3126D8D3A11D1C4855A4F807CBAD6CF919D3A5A88B03BEA2C6372D93C40C9`. Bundled only as an additional trust anchor for the exact `portals.petrolimex.com.vn` host, for older Android trust stores. No private key is included. Normal certificate-chain, validity and hostname verification remain enabled; all other hosts use system roots only. Review the official CA if this upstream chain changes.

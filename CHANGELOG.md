@@ -2,6 +2,9 @@
 
 ## 1.1.1 — 2026-10-28
 
+- Restore official Petrolimex HTTPS access on older TVs missing GlobalSign Root R46; the verified public CA is scoped to the exact API host, without bypassing TLS checks.
+- Add privileged market-only diagnostics so the owner can verify refreshes without interrupting HDMI playback.
+
 - Match actual DOJI, PNJ and Phú Quý publisher names without mixing dealers.
 - Prefer a confirmed primary observation over a later fallback check timestamp; keep timestamps comparable within each source.
 - Separate the TV’s successful verification time from the feed observation/edit time on both Home and clock. Fuel data date does not claim an effective date.

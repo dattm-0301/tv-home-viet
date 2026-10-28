@@ -102,15 +102,40 @@ final class PriceClient {
         e.apply();
         if (goldDue) {
             try {
-                if (!fetchGold(prefs, settings)) fetchGoldFallback(prefs, settings);
+                if (!fetchGold(prefs, settings)) throw new Exception("Primary quote rejected");
+                prefs.edit().remove("gold_error").apply();
             } catch (Exception error) {
+                prefs.edit().putString("gold_error", detail(error)).apply();
                 Log.w(TAG, "Gold fetch failed", error);
-                try { fetchGoldFallback(prefs, settings); } catch (Exception again) { Log.w(TAG, "Gold fallback failed", again); }
+                try { fetchGoldFallback(prefs, settings); }
+                catch (Exception again) { prefs.edit().putString("gold_error", detail(error) + "; " + detail(again)).apply(); }
             }
         }
         if (fuelDue) {
-            try { fetchFuel(prefs, settings); } catch (Exception error) { Log.w(TAG, "Fuel fetch failed", error); }
+            try { fetchFuel(prefs, settings); prefs.edit().remove("fuel_error").apply(); }
+            catch (Exception error) { prefs.edit().putString("fuel_error", detail(error)).apply(); Log.w(TAG, "Fuel fetch failed", error); }
         }
+    }
+
+    private static String detail(Exception e) {
+        String text = e.getClass().getSimpleName() + ": " + String.valueOf(e.getMessage());
+        return text.substring(0, Math.min(240, text.length()));
+    }
+
+    /** Owner-only diagnostics contain public market data, never location or other app preferences. */
+    static JSONObject status(Context c) {
+        JSONObject out = new JSONObject(); SharedPreferences p = prefs(c);
+        String[] allowed = {"gold_brand", "gold_attempt", "gold_checked_at", "gold_error", "gold_buy", "gold_sell",
+                "gold_time", "gold_checked_only", "fuel_attempt", "fuel_checked_at", "fuel_error", "fuel_time", "petrol", "diesel"};
+        java.util.Map<String, ?> all = p.getAll();
+        try { for (String key : allowed) if (all.containsKey(key)) out.put(key, all.get(key)); }
+        catch (Exception ignored) { }
+        return out;
+    }
+
+    static synchronized void refreshNow(Context c) {
+        prefs(c).edit().remove("gold_attempt").remove("fuel_attempt").apply();
+        fetchIfDue(c, HomeSettings.load(c));
     }
 
     /** SJC bars from the chosen dealer on taichinh.com, with the feed's observation time. */
@@ -134,8 +159,9 @@ final class PriceClient {
     private static void fetchGoldFallback(SharedPreferences prefs, HomeSettings settings) throws Exception {
         JSONObject data = new JSONObject(read(GOLD_FALLBACK_URL));
         if (!data.optBoolean("success") || !"SJL1L10".equals(data.optString("type"))
-                || !data.optString("name").contains("SJC")) return;
-        storeGold(prefs, settings, data.optLong("buy"), data.optLong("sell"), data.optLong("timestamp") * 1000L, true);
+                || !data.optString("name").contains("SJC")) throw new Exception("Unexpected reference product");
+        if (!storeGold(prefs, settings, data.optLong("buy"), data.optLong("sell"), data.optLong("timestamp") * 1000L, true))
+            throw new Exception("Invalid reference quote");
     }
 
     private static boolean storeGold(SharedPreferences prefs, HomeSettings settings, long buy, long sell, long stamp, boolean checkedOnly) {
@@ -173,11 +199,13 @@ final class PriceClient {
             }
         }
         long stamp = Math.max(petrolStamp, dieselStamp);
-        if (petrol < 10_000 || petrol > 100_000 || diesel < 10_000 || diesel > 100_000
-                || !plausible(petrolStamp, settings.fuelMaxAgeDays * 86_400_000L)
-                || !plausible(dieselStamp, settings.fuelMaxAgeDays * 86_400_000L)
-                || Math.abs(petrolStamp - dieselStamp) > 6 * 3600_000L) return;
-        if (stamp < prefs.getLong("fuel_time", 0)) return;
+        if (petrol < 10_000 || petrol > 100_000 || diesel < 10_000 || diesel > 100_000)
+            throw new Exception("Missing/invalid fuel prices: " + petrol + "/" + diesel);
+        if (!plausible(petrolStamp, settings.fuelMaxAgeDays * 86_400_000L)
+                || !plausible(dieselStamp, settings.fuelMaxAgeDays * 86_400_000L))
+            throw new Exception("Invalid fuel source timestamps: " + petrolStamp + "/" + dieselStamp);
+        if (Math.abs(petrolStamp - dieselStamp) > 6 * 3600_000L) throw new Exception("Different fuel update cycles");
+        if (stamp < prefs.getLong("fuel_time", 0)) throw new Exception("Fuel source timestamp regressed");
         prefs.edit().putLong("petrol", petrol).putLong("diesel", diesel).putLong("fuel_time", stamp)
                 .putLong("fuel_checked_at", System.currentTimeMillis()).apply();
         Log.i(TAG, "Fuel confirmed: region1 petrol=" + petrol + " diesel=" + diesel);
