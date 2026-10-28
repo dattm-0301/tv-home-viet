@@ -18,7 +18,10 @@ jobs:
           distribution: temurin
           java-version: '17'
       - name: Android SDK
-        run: sdkmanager 'platforms;android-34' 'build-tools;34.0.0'
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+        with:
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
+          log-accepted-android-sdk-licenses: false
       - name: Check, test and build unsigned release
         working-directory: launcher
         run: ./gradlew testReleaseUnitTest lintRelease assembleRelease --no-daemon

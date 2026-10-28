@@ -21,7 +21,7 @@ Scope: this sanitized source tree and the signed 1.0.1 APK, not the private TV c
 
 - JDK 17 / Android SDK 34: debug + unsigned release build succeeded; signed release verified with apksigner and installed successfully.
 - 169 unit tests passed (including coordinate boundary and timestamp-offset checks), zero failures/errors.
-- Full Android release lint: **0 errors, 175 warnings**. Remaining warnings are largely existing hardcoded text/localization, unused resources and layout suggestions; they were not suppressed to claim a warning-free build.
+- Full Android release lint: **0 errors, 176 warnings**. Remaining warnings are largely existing hardcoded text/localization, unused resources and layout suggestions; they were not suppressed to claim a warning-free build.
 - Gitleaks 8.30.1 source scan: no detected secrets. The official fork retains upstream history. Only the sanitized source tree was ported into custom commits, which were separately scanned; private TV repository history is not reused.
 - 27 resolved runtime Maven dependencies queried against OSV: no advisories returned at review time. This does not cover every build-tool or future vulnerability.
 - Android 14 Google TV arm64-v8a emulator, 1920×1080 / 320 dpi: actual signed release launched; network weather and market cache rendered; D-pad menu, app reorder, settings/font switch and app library exercised. The forecast rain bars flex to preserve percentage labels; the clock forecast row was enlarged after visual testing. Demo apps are original sample fixtures, not streaming services.
