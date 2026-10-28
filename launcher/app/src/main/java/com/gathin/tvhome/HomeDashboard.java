@@ -53,7 +53,6 @@ import java.util.TimeZone;
 final class HomeDashboard {
     private static final String TAG = "HomeDashboard";
     private static final Locale VI = new Locale("vi", "VN");
-    private static final TimeZone HANOI = TimeZone.getTimeZone("Asia/Ho_Chi_Minh");
     private static final String[] WEEKDAYS = {"Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật"};
     private static final int RAIN = 0xFF8EBBFF;
 
@@ -75,7 +74,7 @@ final class HomeDashboard {
     private final LinearLayout hourlyRow;
     private final PriceClient.Block gold, fuel;
     private boolean loading;
-    private LocalDate shownDay;
+    private LocalDate shownDay, shownLunarDay;
     private String lunarShort = "";
 
     private final BroadcastReceiver tick = new BroadcastReceiver() {
@@ -130,12 +129,13 @@ final class HomeDashboard {
             TextClock clock = activity.findViewById(id);
             clock.setFormat24Hour(colon("HH:mm"));
             clock.setFormat12Hour(colon("h:mm"));
-            clock.setTimeZone("Asia/Ho_Chi_Minh");
+            clock.setTimeZone(settings.timezone);
         }
 
         weatherPlace.setText(settings.weatherPlace);
         PriceClient.setUp(activity, gold, fuel);
 
+        WidgetOptions.home(activity.findViewById(android.R.id.content), settings);
         updateCalendar();
         updateGreeting();
         showCached();
@@ -173,18 +173,19 @@ final class HomeDashboard {
     // ---- calendar and greeting ------------------------------------------------------------------------
 
     void updateCalendar() {
-        LocalDate today = LocalDate.now(VietnameseLunar.HANOI);
-        if (today.equals(shownDay)) return;
-        shownDay = today;
+        LocalDate today = LocalDate.now(java.time.ZoneId.of(settings.timezone));
+        LocalDate lunarDay = LocalDate.now(VietnameseLunar.HANOI);
+        if (today.equals(shownDay) && lunarDay.equals(shownLunarDay)) return;
+        shownDay = today; shownLunarDay = lunarDay;
         String day = WEEKDAYS[today.getDayOfWeek().getValue() - 1];
         weekday.setText(day);
         date.setText(today.getDayOfMonth() + " tháng " + today.getMonthValue() + ", " + today.getYear());
-        int[] l = VietnameseLunar.of(activity, today);
+        int[] l = VietnameseLunar.of(activity, lunarDay);
         String full = l == null ? "" : VietnameseLunar.longText(l);
         lunar.setText(full);
         int comma = full.indexOf(',');
         lunarShort = comma > 0 ? full.substring(0, comma) : full;
-        Holidays.Hit now = holidays.today(today), next = holidays.next(today);
+        Holidays.Hit now = holidays.today(lunarDay), next = holidays.next(lunarDay);
         chipToday.setVisibility(now == null ? View.GONE : View.VISIBLE);
         if (now != null) chipTodayText.setText(now.name);
         chipNext.setVisibility(next == null ? View.GONE : View.VISIBLE);
@@ -194,9 +195,9 @@ final class HomeDashboard {
         }
         // Collapsed bar: "Thứ Bảy, 24.10 · " then the lunar day in the script face.
         SpannableStringBuilder b = new SpannableStringBuilder(day + ", " + today.getDayOfMonth() + "."
-                + today.getMonthValue() + (lunarShort.isEmpty() ? "" : " · "));
+                + today.getMonthValue() + (!settings.showLunar || lunarShort.isEmpty() ? "" : " · "));
         int from = b.length();
-        b.append(lunarShort);
+        if (settings.showLunar) b.append(lunarShort);
         b.setSpan(new FaceSpan(activity.getResources().getFont(R.font.dancing_bold)), from, b.length(), 0);
         b.setSpan(new AbsoluteSizeSpan((int) activity.getResources().getDimension(R.dimen.home_compact_lunar_text)),
                 from, b.length(), 0);
@@ -206,7 +207,7 @@ final class HomeDashboard {
 
     /** "Chào buổi sáng" … by the hour in Hanoi. */
     void updateGreeting() {
-        int h = Calendar.getInstance(HANOI).get(Calendar.HOUR_OF_DAY);
+        int h = Calendar.getInstance(TimeZone.getTimeZone(settings.timezone)).get(Calendar.HOUR_OF_DAY);
         greeting.setText(h >= 4 && h < 11 ? "Chào buổi sáng" : h < 13 && h >= 11 ? "Chào buổi trưa"
                 : h >= 13 && h < 18 ? "Chào buổi chiều" : h >= 18 && h < 23 ? "Chào buổi tối" : "Chúc ngủ ngon");
     }
@@ -225,7 +226,7 @@ final class HomeDashboard {
         updateCalendar();
         showCached();
         boolean pricesDue = PriceClient.due(activity, settings);
-        boolean weatherDue = WeatherClient.due(activity);
+        boolean weatherDue = (settings.showWeather || settings.showAqi) && WeatherClient.due(activity);
         if (loading || !(pricesDue || weatherDue)) return;
         loading = true;
         Context app = activity.getApplicationContext();
@@ -257,7 +258,7 @@ final class HomeDashboard {
         WeatherClient.Now w = WeatherClient.now(activity, settings.rainPercent, settings.rainHours,
                 settings.weatherStaleMinutes * 60_000L);
         showAir(w.aqi);
-        sunrisePill.setVisibility(w.sunrise > 0 ? View.VISIBLE : View.GONE);
+        sunrisePill.setVisibility(settings.showWeather && w.sunrise > 0 ? View.VISIBLE : View.GONE);
         if (w.sunrise > 0) sunriseText.setText("Mặt trời mọc " + format("HH:mm", w.sunrise));
         if (!w.ok) {
             weatherIcon.setImageResource(R.drawable.wx_cloudy);
@@ -297,8 +298,8 @@ final class HomeDashboard {
 
     /** US AQI pill: dot and label by level. Hidden without a recent reading. */
     private void showAir(int aqi) {
-        aqiPill.setVisibility(aqi >= 0 ? View.VISIBLE : View.GONE);
-        if (aqi < 0) return;
+        aqiPill.setVisibility(settings.showAqi && aqi >= 0 ? View.VISIBLE : View.GONE);
+        if (!settings.showAqi || aqi < 0) return;
         String label = aqi <= 50 ? "Tốt" : aqi <= 100 ? "Trung bình" : aqi <= 150 ? "Kém" : aqi <= 200 ? "Xấu"
                 : aqi <= 300 ? "Rất xấu" : "Nguy hại";
         int color = aqi <= 50 ? 0xFF8BE3A8 : aqi <= 100 ? 0xFFF5D04C : aqi <= 150 ? 0xFFFFA14D
@@ -330,9 +331,9 @@ final class HomeDashboard {
         return "gió mạnh";
     }
 
-    private static String format(String pattern, long time) {
+    private String format(String pattern, long time) {
         SimpleDateFormat f = new SimpleDateFormat(pattern, VI);
-        f.setTimeZone(HANOI);
+        f.setTimeZone(TimeZone.getTimeZone(settings.timezone));
         return f.format(new Date(time));
     }
 }

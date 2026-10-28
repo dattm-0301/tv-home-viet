@@ -23,7 +23,7 @@ final class WeatherClient {
         lat = coordinate(lat, -90, 90, 21.0285);
         lon = coordinate(lon, -180, 180, 105.8542);
         return "latitude=" + lat + "&longitude=" + lon
-                + "&timezone=Asia%2FHo_Chi_Minh&timeformat=unixtime";
+                + "&timezone=" + HomeSettings.load(c).timezone.replace("/", "%2F").replace("+", "%2B") + "&timeformat=unixtime";
     }
     static double coordinate(double value, double min, double max, double fallback) {
         return Double.isFinite(value) && value >= min && value <= max ? value : fallback;
@@ -52,11 +52,11 @@ final class WeatherClient {
             p.edit().remove("weather").remove("air").remove("weather_at").remove("air_at")
                     .putString("location", location).apply();
         }
-        if(!fresh(p,"weather_at",WEATHER_TTL)) try {
+        if(HomeSettings.load(c).showWeather && !fresh(p,"weather_at",WEATHER_TTL)) try {
             String s=get(WEATHER + location); new JSONObject(s).getJSONObject("current").getDouble("temperature_2m");
             p.edit().putString("weather",s).putLong("weather_at",System.currentTimeMillis()).apply();
         } catch(Exception ignored) { }
-        if(!fresh(p,"air_at",AIR_TTL)) try {
+        if(HomeSettings.load(c).showAqi && !fresh(p,"air_at",AIR_TTL)) try {
             String s=get(AIR + location); new JSONObject(s).getJSONObject("current").getDouble("us_aqi");
             p.edit().putString("air",s).putLong("air_at",System.currentTimeMillis()).apply();
         } catch(Exception ignored) { }
@@ -65,6 +65,7 @@ final class WeatherClient {
     private static Snapshot read(Context c) {
         Snapshot s=new Snapshot(); SharedPreferences p=c.getSharedPreferences("ambient_weather_v3",Context.MODE_PRIVATE);
         long now=System.currentTimeMillis();
+        if (!place(c).equals(p.getString("location", ""))) return s;
         try {
             JSONObject r=new JSONObject(p.getString("weather","")), w=r.getJSONObject("current"), d=r.getJSONObject("daily");
             long observed=w.getLong("time")*1000L;
@@ -123,12 +124,14 @@ final class WeatherClient {
     /** True when either cache is past its TTL, so a background fetch() would go to the network. */
     static boolean due(Context c) {
         SharedPreferences p=c.getSharedPreferences("ambient_weather_v3",Context.MODE_PRIVATE);
-        return !place(c).equals(p.getString("location", "")) || !fresh(p,"weather_at",WEATHER_TTL) || !fresh(p,"air_at",AIR_TTL);
+        HomeSettings s = HomeSettings.load(c);
+        return !place(c).equals(p.getString("location", "")) || (s.showWeather && !fresh(p,"weather_at",WEATHER_TTL)) || (s.showAqi && !fresh(p,"air_at",AIR_TTL));
     }
 
     static Now now(Context c, int rainPercent, int rainHours, long staleMs) {
         Now n=new Now(); SharedPreferences p=c.getSharedPreferences("ambient_weather_v3",Context.MODE_PRIVATE);
         long now=System.currentTimeMillis();
+        if (!place(c).equals(p.getString("location", ""))) return n;
         try {
             JSONObject r=new JSONObject(p.getString("weather","")), w=r.getJSONObject("current"), d=r.getJSONObject("daily");
             n.observed=w.getLong("time")*1000L;

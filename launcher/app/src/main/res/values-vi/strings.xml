@@ -76,4 +76,5 @@
     <string name="wallpaper_theme_default">Theo theme</string>
     <string name="reorder">Sắp xếp ứng dụng</string>
     <string name="input_standby_uncertain">Chờ / chưa có tín hiệu</string>
+    <string name="personal_settings">Vị trí &amp; widget · Nền · Đồng hồ</string>
 </resources>

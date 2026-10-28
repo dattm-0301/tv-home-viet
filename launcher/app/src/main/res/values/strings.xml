@@ -152,4 +152,5 @@
     <string name="home_new_group" translatable="false">Nhóm mới</string>
     <string name="home_brightness" translatable="false">Độ sáng</string>
     <string name="input_standby_uncertain">Standby / no signal</string>
+    <string name="personal_settings">Vị trí &amp; widget · Nền · Đồng hồ</string>
 </resources>

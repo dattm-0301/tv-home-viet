@@ -27,24 +27,27 @@ final class ClockScene {
     private static final String[] WEEKDAYS={"Thứ Hai","Thứ Ba","Thứ Tư","Thứ Năm","Thứ Sáu","Thứ Bảy","Chủ Nhật"};
     private final HomeSettings settings;
     private final Holidays holidays;
-    private java.time.LocalDate shownDay;
+    private final Config config;
+    private java.time.LocalDate shownDay, shownLunarDay;
     private final PriceClient.Block gold, fuel;
 
     ClockScene(View root) {
         this.root=root;this.app=root.getContext().getApplicationContext();content=root.findViewById(R.id.dreamContent);photo=root.findViewById(R.id.dreamPhoto);
         settings=HomeSettings.load(app);
+        config=Config.load(app);
         holidays=new Holidays(app);
         UiFont.apply(root);
         int accent=app.getColor(R.color.home_accent);
         android.text.SpannableString f=new android.text.SpannableString("HH:mm");
         f.setSpan(new android.text.style.ForegroundColorSpan(accent),2,3,0);
         android.widget.TextClock clock=root.findViewById(R.id.dreamClock);
-        clock.setFormat24Hour(f);clock.setFormat12Hour(f);clock.setTimeZone("Asia/Ho_Chi_Minh");
+        clock.setFormat24Hour(f);clock.setFormat12Hour(f);clock.setTimeZone(settings.timezone);
         text(R.id.dreamPlace).setText(settings.weatherPlace);
         gold=new PriceClient.Block(root.findViewById(R.id.dreamGold));
         fuel=new PriceClient.Block(root.findViewById(R.id.dreamFuel));
         PriceClient.setUp(app,gold,fuel);
         PriceClient.show(app,settings,gold,fuel);
+        WidgetOptions.clock(root,settings);
         updateCalendar();
         showWeather();
     }
@@ -61,7 +64,7 @@ final class ClockScene {
         IO.execute(()->{
             PriceClient.fetchIfDue(app,settings);
             handler.post(()->{if(started&&token==generation)PriceClient.show(app,settings,gold,fuel);});
-            WeatherClient.fetch(app);
+            if(settings.showWeather || settings.showAqi)WeatherClient.fetch(app);
             handler.post(()->{if(started&&token==generation)showWeather();});
         });
         // Check the 5-minute gold interval; each client only goes to the network when its own TTL is due.
@@ -70,22 +73,23 @@ final class ClockScene {
 
     /** Weekday, date, lunar date and holiday chips; changes only when the day does. */
     private void updateCalendar(){
-        java.time.LocalDate today=java.time.LocalDate.now(VietnameseLunar.HANOI);
-        if(today.equals(shownDay))return;
-        shownDay=today;
+        java.time.LocalDate today=java.time.LocalDate.now(java.time.ZoneId.of(settings.timezone));
+        java.time.LocalDate lunarDay=java.time.LocalDate.now(VietnameseLunar.HANOI);
+        if(today.equals(shownDay)&&lunarDay.equals(shownLunarDay))return;
+        shownDay=today;shownLunarDay=lunarDay;
         text(R.id.dreamWeekday).setText(WEEKDAYS[today.getDayOfWeek().getValue()-1]);
         text(R.id.dreamDate).setText(today.getDayOfMonth()+" tháng "+today.getMonthValue()+", "+today.getYear());
-        int[] l=VietnameseLunar.of(app,today);
+        int[] l=VietnameseLunar.of(app,lunarDay);
         text(R.id.dreamLunar).setText(l==null?"":VietnameseLunar.longText(l));
-        Holidays.Hit now=holidays.today(today), next=holidays.next(today);
-        root.findViewById(R.id.dreamChipToday).setVisibility(now==null?View.GONE:View.VISIBLE);
+        Holidays.Hit now=holidays.today(lunarDay), next=holidays.next(lunarDay);
+        root.findViewById(R.id.dreamChipToday).setVisibility(!settings.showHolidays||now==null?View.GONE:View.VISIBLE);
         if(now!=null)text(R.id.dreamChipTodayText).setText(now.name);
-        root.findViewById(R.id.dreamChipNext).setVisibility(next==null?View.GONE:View.VISIBLE);
+        root.findViewById(R.id.dreamChipNext).setVisibility(!settings.showHolidays||next==null?View.GONE:View.VISIBLE);
         if(next!=null){text(R.id.dreamChipNextName).setText(next.name);text(R.id.dreamChipNextCountdown).setText("· "+Holidays.countdown(next.days));}
     }
 
     private void updateScene(){
-        Calendar c=Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));int next=periodForHour(c.get(Calendar.HOUR_OF_DAY));
+        Calendar c=Calendar.getInstance(TimeZone.getTimeZone(settings.timezone));int next=periodForHour(c.get(Calendar.HOUR_OF_DAY));
         updateCalendar();
         text(R.id.dreamPeriod).setText(PERIODS[next]);
         // A small, discrete shift once a minute instead of a continuously rendered animation.
@@ -97,14 +101,14 @@ final class ClockScene {
         if(next==period)return;
         period=next;
         int top=next==0?0xFF080E1A:next==1?0xFF182A35:next==2?0xFF12313A:next==3?0xFF3A2437:0xFF111C30;
-        root.setBackground(new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{top,0xFF080E18}));
+        root.setBackground(new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{androidx.core.graphics.ColorUtils.blendARGB(config.backgroundColor,top,config.skyIntensity/100f),config.backgroundColor}));
     }
 
     /** The same weather, forecast, air quality and sunrise as the Home panel, from WeatherClient's cache. */
     private void showWeather(){
         WeatherClient.Now w=WeatherClient.now(app,settings.rainPercent,settings.rainHours,settings.weatherStaleMinutes*60_000L);
         View aqiPill=root.findViewById(R.id.dreamAqiPill);
-        aqiPill.setVisibility(w.aqi>=0?View.VISIBLE:View.GONE);
+        aqiPill.setVisibility(settings.showAqi&&w.aqi>=0?View.VISIBLE:View.GONE);
         if(w.aqi>=0){
             int v=w.aqi;
             String label=v<=50?"Tốt":v<=100?"Trung bình":v<=150?"Kém":v<=200?"Xấu":v<=300?"Rất xấu":"Nguy hại";
@@ -112,7 +116,7 @@ final class ClockScene {
             text(R.id.dreamAir).setText("AQI "+v+" · "+label);
             root.findViewById(R.id.dreamAqiDot).setBackgroundTintList(android.content.res.ColorStateList.valueOf(color));
         }
-        root.findViewById(R.id.dreamSunrisePill).setVisibility(w.sunrise>0?View.VISIBLE:View.GONE);
+        root.findViewById(R.id.dreamSunrisePill).setVisibility(settings.showWeather&&w.sunrise>0?View.VISIBLE:View.GONE);
         if(w.sunrise>0)text(R.id.dreamSunrise).setText("Mặt trời mọc "+clock(w.sunrise));
         android.widget.ImageView icon=root.findViewById(R.id.dreamWeatherIcon);
         android.widget.ImageView rainIcon=root.findViewById(R.id.dreamRainIcon);
@@ -142,7 +146,7 @@ final class ClockScene {
         root.findViewById(R.id.dreamWeatherDot).setBackgroundTintList(android.content.res.ColorStateList.valueOf(app.getColor(w.stale?R.color.home_stale:R.color.home_fresh)));
         HourlyStrip.fill(root.findViewById(R.id.dreamHourly),w,settings.rainPercent);
     }
-    private static String clock(long ms){
-        java.text.SimpleDateFormat f=new java.text.SimpleDateFormat("HH:mm",java.util.Locale.US);f.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));return f.format(new java.util.Date(ms));
+    private String clock(long ms){
+        java.text.SimpleDateFormat f=new java.text.SimpleDateFormat("HH:mm",java.util.Locale.US);f.setTimeZone(TimeZone.getTimeZone(settings.timezone));return f.format(new java.util.Date(ms));
     }
 }

@@ -192,6 +192,7 @@
         android:paddingBottom="@dimen/home_panel_pad_v">
 
         <LinearLayout
+            android:id="@+id/weatherSection"
             android:layout_width="@dimen/home_weather_column"
             android:layout_height="match_parent"
             android:orientation="vertical">
@@ -321,6 +322,7 @@
         </LinearLayout>
 
         <View
+            android:id="@+id/weatherPriceDivider"
             android:layout_width="0.75dp"
             android:layout_height="match_parent"
             android:layout_marginStart="14dp"
@@ -329,6 +331,7 @@
 
         <!-- Prices -->
         <LinearLayout
+            android:id="@+id/priceSection"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -346,6 +349,7 @@
                 android:layout_weight="1" />
 
             <View
+                android:id="@+id/priceDivider"
                 android:layout_width="match_parent"
                 android:layout_height="0.75dp"
                 android:background="@color/home_rule" />

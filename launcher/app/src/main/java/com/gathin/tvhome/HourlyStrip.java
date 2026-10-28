@@ -28,6 +28,7 @@ final class HourlyStrip {
             if (w.hours.get(i).rain >= rainPercent) { firstRain = i; break; }
         }
         Typeface bold = UiFont.bold(activity);
+        java.util.TimeZone zone = java.util.TimeZone.getTimeZone(HomeSettings.load(activity).timezone);
         for (int i = 0; i < w.hours.size(); i++) {
             WeatherClient.Hour h = w.hours.get(i);
             boolean rainy = h.rain >= rainPercent;
@@ -37,7 +38,7 @@ final class HourlyStrip {
             col.setPadding(0, dp(density, 5), 0, dp(density, 4));
             if (i == firstRain) col.setBackgroundResource(R.drawable.home_hour_rain_bg);
             else if (i == 0) col.setBackgroundResource(R.drawable.home_hour_now_bg);
-            java.util.Calendar cal = java.util.Calendar.getInstance(java.util.TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+            java.util.Calendar cal = java.util.Calendar.getInstance(zone);
             cal.setTimeInMillis(h.time);
             int hour = cal.get(java.util.Calendar.HOUR_OF_DAY);
             TextView label = small(activity, hour + "h", R.dimen.home_hour_text, bold);

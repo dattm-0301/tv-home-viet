@@ -85,18 +85,18 @@ final class PriceClient {
     static boolean due(Context c, HomeSettings settings) {
         SharedPreferences p = prefs(c);
         long now = System.currentTimeMillis();
-        return now - p.getLong("gold_attempt", 0) >= settings.goldRefreshMinutes * 60_000L
-                || now - p.getLong("fuel_attempt", 0) >= settings.fuelRefreshMinutes * 60_000L;
+        return (settings.showGold && (!settings.goldBrand.equals(p.getString("gold_requested_brand", "")) || now - p.getLong("gold_attempt", 0) >= settings.goldRefreshMinutes * 60_000L))
+                || (settings.showFuel && now - p.getLong("fuel_attempt", 0) >= settings.fuelRefreshMinutes * 60_000L);
     }
 
     /** Fetches whatever is due. Blocking: call off the UI thread. */
     static void fetchIfDue(Context c, HomeSettings settings) {
         SharedPreferences prefs = prefs(c);
         long now = System.currentTimeMillis();
-        boolean goldDue = now - prefs.getLong("gold_attempt", 0) >= settings.goldRefreshMinutes * 60_000L;
-        boolean fuelDue = now - prefs.getLong("fuel_attempt", 0) >= settings.fuelRefreshMinutes * 60_000L;
+        boolean goldDue = settings.showGold && (!settings.goldBrand.equals(prefs.getString("gold_requested_brand", "")) || now - prefs.getLong("gold_attempt", 0) >= settings.goldRefreshMinutes * 60_000L);
+        boolean fuelDue = settings.showFuel && now - prefs.getLong("fuel_attempt", 0) >= settings.fuelRefreshMinutes * 60_000L;
         SharedPreferences.Editor e = prefs.edit();
-        if (goldDue) e.putLong("gold_attempt", now);
+        if (goldDue) e.putLong("gold_attempt", now).putString("gold_requested_brand", settings.goldBrand);
         if (fuelDue) e.putLong("fuel_attempt", now);
         e.apply();
         if (goldDue) {
@@ -141,12 +141,12 @@ final class PriceClient {
             return false;
         }
         // A fallback check must never be replaced by an older observation from the primary feed.
-        if (stamp < prefs.getLong("gold_time", 0)) return false;
-        if (stamp == prefs.getLong("gold_time", 0) && prefs.getBoolean("gold_checked_only", false) != checkedOnly) {
+        if (settings.goldBrand.equals(prefs.getString("gold_brand", "")) && stamp < prefs.getLong("gold_time", 0)) return false;
+        if (settings.goldBrand.equals(prefs.getString("gold_brand", "")) && stamp == prefs.getLong("gold_time", 0) && prefs.getBoolean("gold_checked_only", false) != checkedOnly) {
             // Prefer the dealer observation when both feeds happen to carry the same timestamp.
             if (checkedOnly) return false;
         }
-        prefs.edit().putLong("gold_buy", buy).putLong("gold_sell", sell).putLong("gold_time", stamp)
+        prefs.edit().putString("gold_brand", settings.goldBrand).putLong("gold_buy", buy).putLong("gold_sell", sell).putLong("gold_time", stamp)
                 .putBoolean("gold_checked_only", checkedOnly).putLong("gold_checked_at", System.currentTimeMillis()).apply();
         return true;
     }
@@ -222,7 +222,7 @@ final class PriceClient {
         SharedPreferences prefs = prefs(c);
         long now = System.currentTimeMillis();
         long goldTime = prefs.getLong("gold_time", 0);
-        if (plausible(goldTime, settings.goldMaxAgeHours * 3600_000L)) {
+        if (settings.goldBrand.equals(prefs.getString("gold_brand", "")) && plausible(goldTime, settings.goldMaxAgeHours * 3600_000L)) {
             DecimalFormat f = new DecimalFormat("0.0", DecimalFormatSymbols.getInstance(VI));
             gold.value1.setText(f.format(prefs.getLong("gold_sell", 0) / 1_000_000d));
             gold.value2.setText(f.format(prefs.getLong("gold_buy", 0) / 1_000_000d));

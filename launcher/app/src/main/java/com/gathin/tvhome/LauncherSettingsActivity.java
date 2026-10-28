@@ -125,8 +125,15 @@ public final class LauncherSettingsActivity extends Activity {
         });
         findViewById(R.id.tvSettingsChoice).setOnClickListener(v ->
                 open(SystemSettings.intent(this, Settings.ACTION_SETTINGS)));
+        findViewById(R.id.personalSettingsChoice).setOnClickListener(v -> startActivityForResult(
+                new Intent(this, PersonalSettingsActivity.class), 51));
         refresh();
         columnChoices[Math.max(0, Math.min(columns - 4, 4))].requestFocus();
+    }
+
+    @Override protected void onActivityResult(int request, int result, Intent data) {
+        super.onActivityResult(request, result, data);
+        if (request == 51 && result == RESULT_OK) { setResult(RESULT_OK); finish(); }
     }
 
     private void reverseRow(TextView[] views) {

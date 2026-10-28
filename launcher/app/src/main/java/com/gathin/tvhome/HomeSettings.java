@@ -11,6 +11,9 @@ import org.json.JSONObject;
 final class HomeSettings {
     /** Top-left caption; empty hides it (the design for that corner is still open). */
     String caption = "";
+    boolean showWeather = true, showGold = true, showFuel = true, showLunar = true, showHolidays = true;
+    String homeLayout = "clock_left";
+    String timezone = "Asia/Ho_Chi_Minh";
     /** Place name over the weather; the coordinates themselves are in WeatherClient. */
     String weatherPlace = "Hà Nội";
     /** Rain chip: first hour within rainHours whose probability reaches rainPercent. */
@@ -33,12 +36,21 @@ final class HomeSettings {
         HomeSettings s = new HomeSettings();
         JSONObject o = Config.overlay(context);
         if (o == null) return s;
+        String layout = o.optString("home_layout", "clock_left");
+        if (java.util.Arrays.asList("clock_left", "clock_right", "weather_right").contains(layout)) s.homeLayout = layout;
+        s.showWeather = o.optBoolean("show_weather", true);
+        s.showGold = o.optBoolean("show_gold", true);
+        s.showFuel = o.optBoolean("show_fuel", true);
+        s.showLunar = o.optBoolean("show_lunar", true);
+        s.showHolidays = o.optBoolean("show_holidays", true);
+        try { s.timezone = UserOptions.zone(o.optString("display_timezone", s.timezone)); } catch (Exception ignored) { }
         s.caption = o.optString("home_caption", s.caption).trim();
         s.weatherPlace = o.optString("weather_place", s.weatherPlace).trim();
         s.rainPercent = range(o.optInt("rain_alert_percent", s.rainPercent), 1, 100, s.rainPercent);
         s.rainHours = range(o.optInt("rain_alert_hours", s.rainHours), 1, 24, s.rainHours);
         s.showAqi = o.optBoolean("show_aqi", s.showAqi);
         s.goldBrand = o.optString("gold_brand", s.goldBrand).trim();
+        if (!java.util.Arrays.asList("doji", "pnj", "phuquy", "btmh").contains(s.goldBrand)) s.goldBrand = "doji";
         s.goldRefreshMinutes = range(o.optInt("gold_refresh_minutes", s.goldRefreshMinutes), 5, 240, s.goldRefreshMinutes);
         s.fuelRefreshMinutes = range(o.optInt("fuel_refresh_minutes", s.fuelRefreshMinutes), 15, 720, s.fuelRefreshMinutes);
         s.goldStaleHours = range(o.optInt("gold_stale_hours", s.goldStaleHours), 1, 168, s.goldStaleHours);

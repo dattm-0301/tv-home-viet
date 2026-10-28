@@ -62,6 +62,8 @@ final class Config {
     /** List Coocaa OS sources from com.skyworth.tv in the Inputs menu (config.xml coocaa_sources). */
     final boolean coocaaSources;
     final String inputAction;
+    private List<String> inputSources;
+    List<String> inputSources() { return inputSources; }
     /** Scheme an Inputs row's passthrough URI is sent with instead of content:// (config.xml input_uri_scheme). */
     final String inputUriScheme;
     final int columns;
@@ -313,9 +315,10 @@ final class Config {
         File dir = dir(ctx);
         File file = dir != null ? new File(dir, FILE_NAME) : null;
         boolean mounted = Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
-        JSONObject json = readOverlay(ctx, file, mounted);
+        JSONObject rawTheme = readOverlay(ctx, file, mounted);
+        JSONObject json = UserSettings.merge(ctx, rawTheme);
         if (json != null) {
-            applied = true;
+            applied = rawTheme != null;
             dock = stringList(json, "dock_apps", dock);
             fillDock = bool(json, "fill_dock", fillDock);
             hidden = stringList(json, "hidden_apps", hidden);
@@ -372,13 +375,12 @@ final class Config {
             dockGlass = bool(json, "dock_glass", dockGlass);
             glowStyle = string(json, "glow_style", glowStyle);
         }
-        // A theme push or reset invalidates choices made on the TV. On first use, remember the
-        // current theme without clearing choices from an older launcher version.
+        // On-TV choices override theme defaults until explicitly reset by the owner.
         SharedPreferences choices = ctx.getSharedPreferences(SETTINGS_NAME, Context.MODE_PRIVATE);
         // Unmounted storage looks like a theme reset; compare only once the file is readable.
-        if (mounted) syncThemeChoices(choices, dir, file);
+        // Personal TV choices survive theme pushes and APK updates; reset is explicit in settings.
         int chosenColumns = choices.getInt("columns", columns);
-        if (chosenColumns >= 4 && chosenColumns <= 7) columns = chosenColumns;
+        if (chosenColumns >= 4 && chosenColumns <= 8) columns = chosenColumns;
         int chosenRows = choices.getInt(ROWS_BELOW_DOCK_KEY, rowsBelow);
         if (chosenRows >= 0 && chosenRows <= 3) rowsBelow = chosenRows;
         animations = choices.getBoolean("animations", animations);
@@ -388,8 +390,8 @@ final class Config {
         // A theme can also switch the wallpaper off while the file is still there.
         boolean wallpaperEnabled = json == null || bool(json, "wallpaper", true);
         if (!wallpaperEnabled) wallpaper = null;
-        int rotationMinutes = json == null ? 30 : integer(json, "wallpaper_rotation_minutes", 0, 0, 1440);
-        int wallpaperDim = json == null ? 65 : integer(json, "wallpaper_dim", 0, 0, 90);
+        int rotationMinutes = integer(json, "wallpaper_rotation_minutes", 30, 0, 1440);
+        int wallpaperDim = integer(json, "wallpaper_dim", 65, 0, 90);
         int dockOpacity = json == null ? 100 : integer(json, "dock_opacity", 100, 30, 100);
         String wallpaperOrder = json == null ? WallpaperRotation.ORDER_SHUFFLE
                 : string(json, "wallpaper_order", WallpaperRotation.ORDER_SHUFFLE);
@@ -423,7 +425,7 @@ final class Config {
         Festival festival = json == null ? Festival.NONE : Festival.parse(string(json, "festival", ""),
                 string(json, "festival_until", ""), string(json, "greeting", ""), string(json, "accent_color", ""));
 
-        return new Config(dock, fillDock, hidden, liveTv, liveTvAction, liveTvInputId, packageMap(launchActions), packageMap(appLabels),
+        Config result = new Config(dock, fillDock, hidden, liveTv, liveTvAction, liveTvInputId, packageMap(launchActions), packageMap(appLabels),
                 packageMap(appBanners), panelService,
                 panelAction, panelExtra, coocaaSources, inputAction, inputUriScheme,
                 Math.max(1, columns), Math.max(0, rowsBelow), animations, advancedEffects,
@@ -432,6 +434,8 @@ final class Config {
                 wallpapers, rotationMinutes, wallpaperDim, dockOpacity, wallpaperOrder, applied,
                 festival, inputKeycodes, appKeys, stockHomeRedirect, json == null ? Collections.emptyList() : raceCalendar(json), cinematic, ambientGlow, appGlow,
                 Math.max(0, idleClockMinutes), keyFilter, dockGlass, glowStyle, wallpaperCaptions, handleViewInputs);
+        result.inputSources = Collections.unmodifiableList(stringList(json, "input_sources", Arrays.asList(res.getStringArray(R.array.input_sources))));
+        return result;
     }
 
     /**
@@ -464,45 +468,11 @@ final class Config {
         return races;
     }
 
-    private static void syncThemeChoices(SharedPreferences choices, File dir, File config) {
-        File revision = dir == null ? null : new File(dir, THEME_REVISION_NAME);
-        String token = revisionToken(revision);
-        String signature = fileStamp(config) + ":" + token;
-        String seen = choices.getString(THEME_SIGNATURE_KEY, null);
-        if (seen == null) {
-            // Existing preferences survive an app upgrade, unless the first launch follows an
-            // explicit theme push or reset by the updated tools.
-            SharedPreferences.Editor editor = choices.edit();
-            if (!"absent".equals(token)) editor.remove("columns").remove("animations")
-                    .remove("advanced_effects").remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY);
-            editor.putString(THEME_SIGNATURE_KEY, signature).commit();
-        } else if (!seen.equals(signature)) {
-            choices.edit().remove("columns").remove("animations").remove("advanced_effects")
-                    .remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY)
-                    .putString(THEME_SIGNATURE_KEY, signature).commit();
-        }
-    }
-
-    private static String fileStamp(File file) {
-        return file != null && file.isFile() ? file.length() + "@" + file.lastModified() : "absent";
-    }
-
-    private static String revisionToken(File file) {
-        if (file == null || !file.isFile() || file.length() > 64) return "absent";
-        try (InputStream in = new FileInputStream(file)) {
-            byte[] bytes = new byte[(int) file.length()];
-            int n = in.read(bytes);
-            return n > 0 ? new String(bytes, 0, n, StandardCharsets.US_ASCII) : "absent";
-        } catch (Exception ignored) {
-            return "absent";
-        }
-    }
-
     /** The theme's config.json (or its kept copy), or null: HomeSettings reads the Home redesign's keys from it. */
     static JSONObject overlay(Context ctx) {
         File dir = dir(ctx);
         File file = dir != null ? new File(dir, FILE_NAME) : null;
-        return readOverlay(ctx, file, Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()));
+        return UserSettings.merge(ctx, readOverlay(ctx, file, Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())));
     }
 
     /** Reads and parses the overlay; any problem means "no overlay", never a crash on the home screen. */
@@ -518,8 +488,10 @@ final class Config {
         if (json == null) {
             copy.delete();
         } else {
-            try (FileOutputStream out = new FileOutputStream(copy)) {
-                out.write(json.toString().getBytes(StandardCharsets.UTF_8));
+            try {
+                byte[] bytes = json.toString().getBytes(StandardCharsets.UTF_8);
+                if (!copy.isFile() || !java.util.Arrays.equals(bytes, java.nio.file.Files.readAllBytes(copy.toPath())))
+                    java.nio.file.Files.write(copy.toPath(), bytes);
             } catch (IOException e) {
                 Log.w(TAG, "could not keep a copy of " + file + ": " + e.getMessage());
             }
@@ -527,7 +499,7 @@ final class Config {
         return json;
     }
 
-    private static JSONObject read(File file) {
+    static JSONObject read(File file) {
         if (file == null || !file.isFile()) return null;
         if (file.length() > 64 * 1024) {
             Log.w(TAG, "ignoring " + file + ": larger than 64 KB");

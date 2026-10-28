@@ -116,6 +116,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private String liveTvAction;
     private String liveTvInputId;
     private String inputAction;
+    private java.util.List<String> inputSources;
     private String inputUriScheme;
     private String sourcePanelService;
     private String sourcePanelAction;
@@ -374,6 +375,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         bootToLiveTv = cfg.bootToLiveTv;
         liveTvAction = cfg.liveTvAction;
         liveTvInputId = cfg.liveTvInputId;
+        inputSources = cfg.inputSources();
         inputAction = cfg.inputAction;
         inputUriScheme = cfg.inputUriScheme;
         sourcePanelService = cfg.sourcePanelService;
@@ -2558,7 +2560,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             }
         }
         String hw = inputId.substring(inputId.lastIndexOf('/') + 1);
-        for (String m : getResources().getStringArray(R.array.input_sources)) {
+        for (String m : inputSources) {
             int eq = m.indexOf('=');
             if (eq <= 0 || !m.substring(0, eq).trim().equals(hw)) continue;
             String v = m.substring(eq + 1).trim();
