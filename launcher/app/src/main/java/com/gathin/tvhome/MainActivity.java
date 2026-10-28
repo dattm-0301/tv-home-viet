@@ -784,6 +784,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        if (intent != null && "com.gathin.tvhome.action.REFRESH_SETTINGS".equals(intent.getAction())) {
+            setIntent(new Intent(Intent.ACTION_MAIN));
+            recreate();
+            return;
+        }
         if (openLauncherSettingsIfAsked(intent)) return;
         if (openInputsIfAsked(intent)) return;
         if (intent == null || !intent.hasCategory(Intent.CATEGORY_HOME)) return;

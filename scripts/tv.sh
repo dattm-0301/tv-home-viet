@@ -40,7 +40,7 @@ case "$action" in
     manifest=$("$aapt_bin" dump badging "$apk")
     case "$manifest" in "package: name='$pkg'"*) ;; *) echo "Wrong application ID; refusing install" >&2; exit 2;; esac
     backup
-    "$adb_bin" -s "$serial" install -r "$apk"
+    "$adb_bin" -s "$serial" install --no-incremental -r "$apk"
     "$adb_bin" -s "$serial" shell am start -n "$component"
     echo "Check remote/HDMI, then choose the default Home in TV settings. Stock Home remains installed."
     ;;
@@ -58,8 +58,7 @@ case "$action" in
       python3 "$repo/scripts/config.py" "$kind" "$config" > "$prepared"
     fi
     "$adb_bin" -s "$serial" shell content write --uri "content://$pkg.theme/$endpoint" < "$prepared"
-    "$adb_bin" -s "$serial" shell am force-stop "$pkg"
-    "$adb_bin" -s "$serial" shell am start -n "$component"
+    "$adb_bin" -s "$serial" shell am start -a com.gathin.tvhome.action.REFRESH_SETTINGS -n "$component"
     echo "Applied $endpoint. Personal options take precedence over theme defaults."
     ;;
   *) echo "Unknown action: $action" >&2; exit 2 ;;
