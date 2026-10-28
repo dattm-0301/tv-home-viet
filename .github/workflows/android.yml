@@ -22,6 +22,8 @@ jobs:
         with:
           packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
           log-accepted-android-sdk-licenses: false
+      - name: Validate configuration and updater
+        run: python3 -m unittest discover -s scripts/tests -v && bash -n scripts/tv.sh
       - name: Check, test and build unsigned release
         working-directory: launcher
         run: ./gradlew testReleaseUnitTest lintRelease assembleRelease --no-daemon
