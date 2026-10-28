@@ -30,7 +30,7 @@ import java.util.TimeZone;
 
 /**
  * SJC gold (taichinh.com, giavang.now fallback) and Petrolimex fuel prices for the Home panel and the screensaver:
- * fetched off the UI thread when due, cached in SharedPreferences "market_prices_v2", shown in
+ * fetched off the UI thread when due, cached in SharedPreferences "market_prices_v3", shown in
  * layout/home_price_block.xml blocks with the feed's observation date and a fresh/stale dot.
  */
 final class PriceClient {
@@ -44,12 +44,13 @@ final class PriceClient {
 
     /** One price block's views. */
     static final class Block {
-        final TextView kicker, stamp, caption1, value1, caption2, value2;
+        final TextView kicker, stamp, sourceTime, caption1, value1, caption2, value2;
         final View dot;
 
         Block(View root) {
             kicker = root.findViewById(R.id.blockKicker);
             stamp = root.findViewById(R.id.blockStamp);
+            sourceTime = root.findViewById(R.id.blockSourceTime);
             dot = root.findViewById(R.id.blockDot);
             caption1 = root.findViewById(R.id.blockCaption1);
             value1 = root.findViewById(R.id.blockValue1);
@@ -59,7 +60,7 @@ final class PriceClient {
     }
 
     private static SharedPreferences prefs(Context c) {
-        return c.getSharedPreferences("market_prices_v2", Context.MODE_PRIVATE);
+        return c.getSharedPreferences("market_prices_v3", Context.MODE_PRIVATE);
     }
 
     /** Captions and sizes: gold shows the sell price big (accent) and buy small; fuel shows E10 big and diesel small. */
@@ -85,16 +86,16 @@ final class PriceClient {
     static boolean due(Context c, HomeSettings settings) {
         SharedPreferences p = prefs(c);
         long now = System.currentTimeMillis();
-        return (settings.showGold && (!settings.goldBrand.equals(p.getString("gold_requested_brand", "")) || now - p.getLong("gold_attempt", 0) >= settings.goldRefreshMinutes * 60_000L))
-                || (settings.showFuel && now - p.getLong("fuel_attempt", 0) >= settings.fuelRefreshMinutes * 60_000L);
+        return (settings.showGold && (!settings.goldBrand.equals(p.getString("gold_requested_brand", "")) || PriceRules.due(now, p.getLong("gold_attempt", 0), settings.goldRefreshMinutes * 60_000L)))
+                || (settings.showFuel && PriceRules.due(now, p.getLong("fuel_attempt", 0), settings.fuelRefreshMinutes * 60_000L));
     }
 
     /** Fetches whatever is due. Blocking: call off the UI thread. */
-    static void fetchIfDue(Context c, HomeSettings settings) {
+    static synchronized void fetchIfDue(Context c, HomeSettings settings) {
         SharedPreferences prefs = prefs(c);
         long now = System.currentTimeMillis();
-        boolean goldDue = settings.showGold && (!settings.goldBrand.equals(prefs.getString("gold_requested_brand", "")) || now - prefs.getLong("gold_attempt", 0) >= settings.goldRefreshMinutes * 60_000L);
-        boolean fuelDue = settings.showFuel && now - prefs.getLong("fuel_attempt", 0) >= settings.fuelRefreshMinutes * 60_000L;
+        boolean goldDue = settings.showGold && (!settings.goldBrand.equals(prefs.getString("gold_requested_brand", "")) || PriceRules.due(now, prefs.getLong("gold_attempt", 0), settings.goldRefreshMinutes * 60_000L));
+        boolean fuelDue = settings.showFuel && PriceRules.due(now, prefs.getLong("fuel_attempt", 0), settings.fuelRefreshMinutes * 60_000L);
         SharedPreferences.Editor e = prefs.edit();
         if (goldDue) e.putLong("gold_attempt", now).putString("gold_requested_brand", settings.goldBrand);
         if (fuelDue) e.putLong("fuel_attempt", now);
@@ -116,13 +117,14 @@ final class PriceClient {
     private static boolean fetchGold(SharedPreferences prefs, HomeSettings settings) throws Exception {
         JSONObject response = new JSONObject(read(GOLD_URL));
         if (!"vnd_per_luong".equals(response.optString("unit"))
-                || !"vang_mieng_sjc".equals(response.optString("product"))) return false;
+                || !"vang_mieng_sjc".equals(response.optString("product"))) throw new Exception("Unexpected gold product/unit");
         JSONObject dealer = response.getJSONObject("sjc").optJSONObject(settings.goldBrand);
         if (dealer == null) return false;
         JSONObject metrics = dealer.getJSONObject("metrics");
         JSONObject buy = metrics.getJSONObject("buy"), sell = metrics.getJSONObject("sell");
-        if (!settings.goldBrand.equals(buy.getJSONObject("source").optString("publisher"))
-                || !settings.goldBrand.equals(sell.getJSONObject("source").optString("publisher"))) return false;
+        if (!PriceRules.publisherMatches(settings.goldBrand, buy.getJSONObject("source").optString("publisher"))
+                || !PriceRules.publisherMatches(settings.goldBrand, sell.getJSONObject("source").optString("publisher")))
+            throw new Exception("Gold publisher does not match selected dealer");
         long b = buy.getLong("value"), s = sell.getLong("value");
         long stamp = Math.max(iso(buy.getString("observed_at")), iso(sell.getString("observed_at")));
         return storeGold(prefs, settings, b, s, stamp, false);
@@ -140,14 +142,13 @@ final class PriceClient {
         if (buy < 10_000_000L || sell < buy || sell > 500_000_000L || !plausible(stamp, settings.goldMaxAgeHours * 3600_000L)) {
             return false;
         }
-        // A fallback check must never be replaced by an older observation from the primary feed.
-        if (settings.goldBrand.equals(prefs.getString("gold_brand", "")) && stamp < prefs.getLong("gold_time", 0)) return false;
-        if (settings.goldBrand.equals(prefs.getString("gold_brand", "")) && stamp == prefs.getLong("gold_time", 0) && prefs.getBoolean("gold_checked_only", false) != checkedOnly) {
-            // Prefer the dealer observation when both feeds happen to carry the same timestamp.
-            if (checkedOnly) return false;
-        }
+        boolean sameDealer = settings.goldBrand.equals(prefs.getString("gold_brand", ""));
+        if (sameDealer && !PriceRules.replaceGold(stamp, checkedOnly, prefs.getLong("gold_time", 0),
+                prefs.getBoolean("gold_checked_only", false), prefs.getLong("gold_checked_at", 0),
+                System.currentTimeMillis(), Math.max(30, settings.goldRefreshMinutes * 2) * 60_000L)) return true;
         prefs.edit().putString("gold_brand", settings.goldBrand).putLong("gold_buy", buy).putLong("gold_sell", sell).putLong("gold_time", stamp)
                 .putBoolean("gold_checked_only", checkedOnly).putLong("gold_checked_at", System.currentTimeMillis()).apply();
+        Log.i(TAG, "Gold confirmed: " + (checkedOnly ? "reference" : settings.goldBrand) + " buy=" + buy + " sell=" + sell);
         return true;
     }
 
@@ -179,6 +180,7 @@ final class PriceClient {
         if (stamp < prefs.getLong("fuel_time", 0)) return;
         prefs.edit().putLong("petrol", petrol).putLong("diesel", diesel).putLong("fuel_time", stamp)
                 .putLong("fuel_checked_at", System.currentTimeMillis()).apply();
+        Log.i(TAG, "Fuel confirmed: region1 petrol=" + petrol + " diesel=" + diesel);
     }
 
     /** ISO-8601 with an explicit offset; older feed values without one are UTC. */
@@ -223,14 +225,14 @@ final class PriceClient {
         long now = System.currentTimeMillis();
         long goldTime = prefs.getLong("gold_time", 0);
         if (settings.goldBrand.equals(prefs.getString("gold_brand", "")) && plausible(goldTime, settings.goldMaxAgeHours * 3600_000L)) {
-            DecimalFormat f = new DecimalFormat("0.0", DecimalFormatSymbols.getInstance(VI));
-            gold.value1.setText(f.format(prefs.getLong("gold_sell", 0) / 1_000_000d));
-            gold.value2.setText(f.format(prefs.getLong("gold_buy", 0) / 1_000_000d));
+            gold.value1.setText(PriceRules.goldMillions(prefs.getLong("gold_sell", 0)));
+            gold.value2.setText(PriceRules.goldMillions(prefs.getLong("gold_buy", 0)));
             boolean checkedOnly = prefs.getBoolean("gold_checked_only", false);
-            boolean old = now - goldTime > settings.goldStaleHours * 3600_000L || checkedOnly
-                    || now - prefs.getLong("gold_checked_at", 0) > Math.max(30, settings.goldRefreshMinutes * 2) * 60_000L;
-            stamp(c, gold, goldTime, old, checkedOnly ? "'Tham khảo' HH:mm"
-                    : old ? "'Cũ' · HH:mm dd/MM" : "HH:mm · dd/MM");
+            checked(c, gold, now, prefs.getLong("gold_checked_at", 0), Math.max(30, settings.goldRefreshMinutes * 2) * 60_000L);
+            String dealer = settings.goldBrand.equals("phuquy") ? "Phú Quý" : settings.goldBrand.toUpperCase(Locale.ROOT);
+            gold.sourceTime.setText((checkedOnly ? "Tham khảo · mốc " : dealer + " · mốc ") + format("HH:mm dd/MM", goldTime));
+            gold.sourceTime.setTextColor(c.getColor(checkedOnly || now - goldTime > settings.goldStaleHours * 3600_000L
+                    ? R.color.home_stale : R.color.home_text_80));
         } else {
             gold.value1.setText("—");
             gold.value2.setText("—");
@@ -241,9 +243,11 @@ final class PriceClient {
             DecimalFormat f = new DecimalFormat("#,##0", DecimalFormatSymbols.getInstance(VI));
             fuel.value1.setText(f.format(prefs.getLong("petrol", 0)));
             fuel.value2.setText(f.format(prefs.getLong("diesel", 0)));
-            boolean old = now - fuelTime > settings.fuelStaleDays * 86_400_000L
-                    || now - prefs.getLong("fuel_checked_at", 0) > Math.max(90, settings.fuelRefreshMinutes * 2) * 60_000L;
-            stamp(c, fuel, fuelTime, old, old ? "'Cũ' · dd/MM" : "'Cập nhật' dd/MM");
+            checked(c, fuel, now, prefs.getLong("fuel_checked_at", 0), Math.max(90, settings.fuelRefreshMinutes * 2) * 60_000L);
+            // LastModified is data edit time, not necessarily the price's effective time.
+            fuel.sourceTime.setText("Vùng 1 · dữ liệu " + format("dd/MM", fuelTime));
+            fuel.sourceTime.setTextColor(c.getColor(now - fuelTime > settings.fuelStaleDays * 86_400_000L
+                    ? R.color.home_stale : R.color.home_text_80));
         } else {
             fuel.value1.setText("—");
             fuel.value2.setText("—");
@@ -251,15 +255,21 @@ final class PriceClient {
         }
     }
 
-    private static void stamp(Context c, Block b, long time, boolean old, String pattern) {
+    private static String format(String pattern, long time) {
         SimpleDateFormat f = new SimpleDateFormat(pattern, VI);
         f.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
-        b.stamp.setText(f.format(new Date(time)));
-        b.dot.setBackgroundTintList(ColorStateList.valueOf(c.getColor(old ? R.color.home_stale : R.color.home_fresh)));
+        return f.format(new Date(time));
+    }
+
+    private static void checked(Context c, Block b, long now, long time, long ttl) {
+        boolean fresh = PriceRules.fresh(now, time, ttl);
+        b.stamp.setText(time <= 0 ? "Chưa xác nhận" : (fresh ? "Kiểm tra " : "Bản lưu ") + format("HH:mm", time));
+        b.dot.setBackgroundTintList(ColorStateList.valueOf(c.getColor(fresh ? R.color.home_fresh : R.color.home_stale)));
     }
 
     private static void noData(Context c, Block b) {
         b.stamp.setText("Chưa cập nhật");
+        b.sourceTime.setText("Chờ dữ liệu nguồn");
         b.dot.setBackgroundTintList(ColorStateList.valueOf(c.getColor(R.color.home_stale)));
     }
 }

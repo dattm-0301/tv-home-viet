@@ -42,6 +42,17 @@
             android:textSize="@dimen/home_price_stamp_text" />
     </com.gathin.tvhome.ShrinkRow>
 
+    <TextView
+        android:id="@+id/blockSourceTime"
+        style="@style/HomePanelText"
+        android:layout_width="match_parent"
+        android:layout_marginTop="1dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/ui_medium"
+        android:fontFeatureSettings="tnum"
+        android:textColor="@color/home_text_80"
+        android:textSize="7.5sp" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
