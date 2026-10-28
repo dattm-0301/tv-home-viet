@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.1 — 2026-10-28
+
+- Match actual DOJI, PNJ and Phú Quý publisher names without mixing dealers.
+- Prefer a confirmed primary observation over a later fallback check timestamp; keep timestamps comparable within each source.
+- Separate the TV’s successful verification time from the feed observation/edit time on both Home and clock. Fuel data date does not claim an effective date.
+- Rebuild only the market cache in a new namespace; preserve personal settings, apps and previous-version rollback cache.
+- Retain up to three fractional digits for million-VND gold prices; resume refreshes if the device clock moves backwards.
+- Defaults remain gold 5 minutes and fuel 15 minutes while Home/clock is visible, with cached-data labels on failures.
+
 ## 1.1.0 — 2026-10-28
 
 - Remote settings for city/coordinates, timezone, three Home layouts, widget visibility, color background and idle clock.

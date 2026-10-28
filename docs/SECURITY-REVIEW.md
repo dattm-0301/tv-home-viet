@@ -1,6 +1,6 @@
 # Public preview review — 2026-10-28
 
-Scope: this sanitized source tree and the signed 1.1.0 APK, not the private TV checkout or its full history. This is a local engineering review, not an independent penetration-test certificate.
+Scope: this sanitized source tree and the signed 1.1.1 APK, not the private TV checkout or its full history. This is a local engineering review, not an independent penetration-test certificate.
 
 ## Changes made for publication
 
@@ -20,8 +20,8 @@ Scope: this sanitized source tree and the signed 1.1.0 APK, not the private TV c
 ## Checks and outcomes
 
 - JDK 17 / Android SDK 34: debug + unsigned release build succeeded; signed release verified with apksigner and installed successfully.
-- 176 unit tests passed (including coordinate boundary and timestamp-offset checks), zero failures/errors.
-- Full Android release lint: **0 errors, 176 warnings**. Remaining warnings are largely existing hardcoded text/localization, unused resources and layout suggestions; they were not suppressed to claim a warning-free build.
+- 183 unit tests passed (including coordinate boundary and timestamp-offset checks), zero failures/errors.
+- Full Android release lint: **0 errors, 181 warnings**. Remaining warnings include existing hardcoded text/localization, unused resources and layout suggestions plus the new Vietnamese price metadata labels; they were not suppressed to claim a warning-free build.
 - Gitleaks 8.30.1 source scan: no detected secrets. The official fork retains upstream history. Only the sanitized source tree was ported into custom commits, which were separately scanned; private TV repository history is not reused.
 - 27 resolved runtime Maven dependencies queried against OSV: no advisories returned at review time. This does not cover every build-tool or future vulnerability.
 - Android 14 Google TV arm64-v8a emulator, 1920×1080 / 320 dpi: actual signed release launched; network weather and market cache rendered; D-pad menu, app reorder, settings/font switch and app library exercised. The forecast rain bars flex to preserve percentage labels; the clock forecast row was enlarged after visual testing. Demo apps are original sample fixtures, not streaming services.
@@ -62,3 +62,7 @@ The private PersonalSettingsActivity validates coordinates, IANA timezones, nume
 The release updater runs only on request, selects a complete versioned release from the fixed project repository, limits response sizes, verifies SHA-256, and delegates to the guarded APK installer. It does not bypass Android signature/downgrade checks or silently remove app data. Four Python checks cover validation, checksum tampering, release assets and version ordering. No update endpoint, token or signing private key is embedded in the APK.
 
 Runtime follow-up: on the emulator, the TV form saved a preset city and disabled price widgets, signed in-place installation and theme import retained personal JSON, and 8-column/font/app groups remained in the existing fixture. A fresh headless Android 14 TV emulator verified Tokyo time under an Android 12-hour setting (the launcher now consistently shows 24-hour time), all optional widgets off, and weather-right layout refreshed without force-stop. The older windowed emulator fixture experienced native HardwareRenderer/relayout stalls during repeated restarts; it was not used as evidence that every restart passed. New physical-TV validation remains outstanding.
+
+## Price contract correction — 1.1.1
+
+Live public feed samples showed publisher values DOJI, PNJ and Phú Quý rather than lowercase configuration keys. Normalization is constrained to the known dealer IDs and tested against those values and mismatched dealers. Unit/product identity and plausibility checks remain. Primary observation timestamps and fallback check timestamps no longer order one another. Verified fetch time is separately displayed; Petrolimex LastModified is labeled data time rather than an effective-time claim. Clock rollback cannot indefinitely suppress requests. Only the market cache namespace changes; private settings and the previous rollback cache remain. Seven additional JVM regression checks cover publisher names, cross-source precedence, stale-primary fallback, same-source regressions, time rollback and price precision.

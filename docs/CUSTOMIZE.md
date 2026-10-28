@@ -62,3 +62,13 @@ Các khóa cá nhân được hỗ trợ: tên/tọa độ, `display_timezone`, 
 `input_action` và `input_sources` là cấu hình theme/profile kỹ thuật, không phải tùy chọn cá nhân. Bản 1.1 đọc mapping từ file JSON thực sự; không cần sửa rồi build lại APK. Chỉ dùng profile Xiaomi nếu đúng model/firmware đã ghi trong SETUP; TV khác bắt đầu bằng theme mặc định. Không thử số cổng hoặc mở menu nhà máy một cách ngẫu nhiên.
 
 Đổi theme không tự vô hiệu hóa launcher hay dịch vụ hệ thống. Nếu TV không có HDMI-in (box), không tạo cổng HDMI giả. Trạng thái standby không chứng minh có dây hoặc có hình.
+
+## Đọc mốc giá từ 1.1.1
+
+- **Kiểm tra HH:mm**: lần TV nhận và xác thực dữ liệu thành công, theo giờ Việt Nam. **Bản lưu HH:mm**: lần xác thực đó đã quá ngưỡng; ứng dụng còn giữ giá có tuổi nằm trong giới hạn, không khẳng định vừa lấy được dữ liệu mới.
+- **DOJI/PNJ/Phú Quý/BTMH · mốc HH:mm dd/MM**: thời điểm quan sát do nguồn tổng hợp cung cấp, không phải thời gian tải của TV và không đảm bảo là thời điểm đại lý thay bảng giá.
+- **Tham khảo · mốc…**: dữ liệu SJC dự phòng; không gán nó là báo giá chính thức của đại lý đang chọn.
+- **Vùng 1 · dữ liệu dd/MM**: ngày sửa bản ghi Petrolimex. Không suy ra chính xác ngày/giờ hiệu lực từ LastModified. Giá vẫn có thể không đổi qua nhiều ngày; việc xác thực thành công vẫn cập nhật dòng Kiểm tra.
+- Màu dấu chấm phản ánh độ gần của lần xác thực; dòng mốc dữ liệu có thể chuyển vàng nếu dữ liệu nguồn đã lâu. Giới hạn tuổi cứng vẫn ngăn hiển thị giá quá cũ.
+
+Nâng cấp 1.1.1 chỉ dựng lại cache giá để loại dữ liệu với ý nghĩa timestamp cũ; không xóa dữ liệu ứng dụng/cấu hình cá nhân. Khi mới mở có thể cần vài giây để lấy lại giá.

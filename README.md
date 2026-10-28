@@ -12,7 +12,7 @@ Launcher cho Android TV / Google TV, phát triển từ [CleanYourTV của Gathi
 
 **Nhánh sử dụng: `feat/tv-home-viet`.** Nhánh `main` giữ mã gốc CleanYourTV. [Nguồn gốc và cách cập nhật](docs/UPSTREAM.md).
 
-[**Tải APK 1.1.0**](https://github.com/dattm-0301/tv-home-viet/releases/download/tv-home-viet-v1.1.0/TV-Home-Viet-1.1.0.apk) · [Trang phát hành và mã kiểm tra](https://github.com/dattm-0301/tv-home-viet/releases/tag/tv-home-viet-v1.1.0)
+[**Tải APK 1.1.1**](https://github.com/dattm-0301/tv-home-viet/releases/download/tv-home-viet-v1.1.1/TV-Home-Viet-1.1.1.apk) · [Trang phát hành và mã kiểm tra](https://github.com/dattm-0301/tv-home-viet/releases/tag/tv-home-viet-v1.1.1)
 
 ## Cài nhanh
 
