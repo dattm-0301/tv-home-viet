@@ -128,7 +128,7 @@ final class HomeDashboard {
         for (int id : new int[]{R.id.clock, R.id.compactClock}) {
             TextClock clock = activity.findViewById(id);
             clock.setFormat24Hour(colon("HH:mm"));
-            clock.setFormat12Hour(colon("h:mm"));
+            clock.setFormat12Hour(colon("HH:mm"));
             clock.setTimeZone(settings.timezone);
         }
 

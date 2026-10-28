@@ -5,7 +5,7 @@
 Giữ OK trên nút **Cài đặt** → **Tùy chọn launcher** → **Vị trí & widget · Nền · Đồng hồ**.
 
 1. Chọn thành phố có sẵn (tọa độ trung tâm), hoặc nhập tên + **cả vĩ độ và kinh độ** từ ghim bản đồ. Đổi tên riêng không thay đổi tọa độ. Hỗ trợ tọa độ toàn cầu; không dùng GPS.
-2. Chọn múi giờ IANA, ví dụ `Asia/Ho_Chi_Minh`, `Asia/Tokyo`, hoặc `system` để theo TV. Đồng hồ/ngày dương/dự báo theo lựa chọn; **âm lịch/ngày lễ là lịch Việt Nam UTC+7**. Ngoài Việt Nam, hai ngày có thể lệch nhau gần nửa đêm.
+2. Chọn múi giờ IANA, ví dụ `Asia/Ho_Chi_Minh`, `Asia/Tokyo`, hoặc `system` để theo TV. Đồng hồ hiển thị 24 giờ, nhất quán giữa Home và màn hình chờ kể cả TV đang chọn 12 giờ trong Android. Đồng hồ/ngày dương/dự báo theo lựa chọn; **âm lịch/ngày lễ là lịch Việt Nam UTC+7**. Ngoài Việt Nam, hai ngày có thể lệch nhau gần nửa đêm.
 3. Bật/tắt thời tiết, AQI, vàng, xăng dầu, lịch âm, ngày lễ. Trong màn hình chờ, AQI nằm cùng bảng thời tiết; muốn hiện AQI ở đó cần bật thời tiết.
 4. Chọn đại lý vàng `doji`, `pnj`, `phuquy`, `btmh`; mặc định DOJI. Giá đều là vàng miếng SJC, fallback luôn ghi Tham khảo. Xăng dầu là Petrolimex **vùng 1, E10 RON 95-III và DO 0,05S-II**, không tự đổi theo vị trí thời tiết.
 5. Chọn bố cục Home: đồng hồ trái, đồng hồ phải, hoặc thời tiết ở bên phải bảng thông tin. Chọn nền màu, cường độ nền theo giờ (0 tắt), thời gian tự mở đồng hồ (0 tắt).
